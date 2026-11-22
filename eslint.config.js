@@ -1,5 +1,3 @@
-import firebaseRulesPlugin from '@firebase/eslint-plugin-security-rules';
-
 export default [
   {
     ignores: [
@@ -11,5 +9,4 @@ export default [
       'src/assets/**/*',
     ],
   },
-  firebaseRulesPlugin.configs['flat/recommended'],
 ];
