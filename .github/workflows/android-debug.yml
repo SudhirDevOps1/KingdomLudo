@@ -39,7 +39,7 @@ jobs:
         run: pnpm run build
 
       - name: Sync Capacitor Android
-        run: npx cap sync android || true
+        run: pnpm exec cap sync android
 
       - name: Build Debug APK
         working-directory: android
