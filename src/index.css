@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --font-display: 'Cinzel', Georgia, 'Times New Roman', serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --royal-obsidian: #10141E;
+    --structural-slate: #1A2130;
+    --ivory: #E7E2D8;
+    --royal-gold: #E6A93C;
+    --sovereign-gold: #D97706;
+    --kingdom-crimson: #DC2626;
+    --kingdom-cobalt: #2563EB;
+    --kingdom-emerald: #16A34A;
+    --kingdom-amber: #D97706;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    font-family: var(--font-sans);
+    background-color: var(--royal-obsidian);
+    color: var(--ivory);
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
