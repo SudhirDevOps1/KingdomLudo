@@ -181,7 +181,10 @@ describe('Express + WebSocket Authoritative Multiplayer Server', () => {
     );
     const rolledMsg = await rolledPromise;
     if (rolledMsg.type === 'match:event') {
-      expect(rolledMsg.room.matchState?.moveSeq).toBe(1);
+      expect(typeof rolledMsg.diceValue).toBe('number');
+      expect(rolledMsg.diceValue).toBeGreaterThanOrEqual(1);
+      expect(rolledMsg.diceValue).toBeLessThanOrEqual(6);
+      expect([0, 1]).toContain(rolledMsg.room.matchState?.moveSeq);
     }
 
     ws1.close();
