@@ -10,7 +10,8 @@ coverage/
 !.env.production.example
 !.env.development.example
 .backups/
-data/
+/data/
+!src/data/
 *.sqlite*
 *.db*
 release-artifacts/

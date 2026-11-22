@@ -1,0 +1,200 @@
+export interface BoardTheme {
+  id: string;
+  name: string;
+  subtitle: string;
+  isDefault?: boolean;
+  skyHex: string;
+  fogHex: string;
+  fogDensity: number;
+  sunHex: string;
+  sunIntensity: number;
+  hemiSkyHex: string;
+  hemiGroundHex: string;
+  plinthHex: string;
+  tabletopHex: string;
+  goldTrimHex: string;
+  trackLightHex: string;
+  trackDarkHex: string;
+}
+
+export const BOARD_THEMES: BoardTheme[] = [
+  {
+    id: 'royal-enchanted-courtyard',
+    name: 'Royal Enchanted Courtyard',
+    subtitle: 'Flagship open-air fortress courtyard with lush mossy stones, royal banners, and enchanted waterfalls.',
+    isDefault: true,
+    skyHex: '#0F172A',
+    fogHex: '#10141E',
+    fogDensity: 0.018,
+    sunHex: '#FFF7ED',
+    sunIntensity: 1.6,
+    hemiSkyHex: '#60A5FA',
+    hemiGroundHex: '#1E293B',
+    plinthHex: '#334155',
+    tabletopHex: '#1E293B',
+    goldTrimHex: '#E6A93C',
+    trackLightHex: '#E2E8F0',
+    trackDarkHex: '#475569',
+  },
+  {
+    id: 'celestial-sky-citadel',
+    name: 'Celestial Sky Citadel',
+    subtitle: 'A luminous floating bastion high above cloud oceans, reflecting brilliant daylight and azure skies.',
+    skyHex: '#0284C7',
+    fogHex: '#38BDF8',
+    fogDensity: 0.012,
+    sunHex: '#FFFFFF',
+    sunIntensity: 1.8,
+    hemiSkyHex: '#BAE6FD',
+    hemiGroundHex: '#64748B',
+    plinthHex: '#64748B',
+    tabletopHex: '#334155',
+    goldTrimHex: '#FBBF24',
+    trackLightHex: '#F8FAFC',
+    trackDarkHex: '#94A3B8',
+  },
+  {
+    id: 'twilight-arcane-sanctuary',
+    name: 'Twilight Arcane Sanctuary',
+    subtitle: 'Mystical starlit ruins bathed in deep violet arcane mist, glowing rune-stones, and glowing flora.',
+    skyHex: '#1E1B4B',
+    fogHex: '#0F172A',
+    fogDensity: 0.024,
+    sunHex: '#A78BFA',
+    sunIntensity: 1.2,
+    hemiSkyHex: '#818CF8',
+    hemiGroundHex: '#090D16',
+    plinthHex: '#1E1B4B',
+    tabletopHex: '#0F172A',
+    goldTrimHex: '#F59E0B',
+    trackLightHex: '#CBD5E1',
+    trackDarkHex: '#334155',
+  },
+  {
+    id: 'jungle-kingdom',
+    name: 'Verdant Jungle Canopy',
+    subtitle: 'Overgrown temple ruins covered in emerald vines, tropical canopy mist, and ancient stone carvings.',
+    skyHex: '#064E3B',
+    fogHex: '#022C22',
+    fogDensity: 0.02,
+    sunHex: '#FEF08A',
+    sunIntensity: 1.5,
+    hemiSkyHex: '#86EFAC',
+    hemiGroundHex: '#14532D',
+    plinthHex: '#292524',
+    tabletopHex: '#1C1917',
+    goldTrimHex: '#EAB308',
+    trackLightHex: '#E7E5E4',
+    trackDarkHex: '#57534E',
+  },
+  {
+    id: 'artisan-tabletop-miniature',
+    name: 'Artisan Wood & Brass',
+    subtitle: 'Hand-carved polished mahogany board with gleaming brass inlays and soft warm tavern lantern light.',
+    skyHex: '#1C1917',
+    fogHex: '#292524',
+    fogDensity: 0.015,
+    sunHex: '#FED7AA',
+    sunIntensity: 1.4,
+    hemiSkyHex: '#D97706',
+    hemiGroundHex: '#451A03',
+    plinthHex: '#451A03',
+    tabletopHex: '#292524',
+    goldTrimHex: '#F59E0B',
+    trackLightHex: '#FEF3C7',
+    trackDarkHex: '#78350F',
+  },
+  {
+    id: 'classic-royal-board',
+    name: 'Classic Tournament Hall',
+    subtitle: 'High-contrast clean marble arena tailored for sharp visibility, competitive focus, and tournament play.',
+    skyHex: '#111827',
+    fogHex: '#1F2937',
+    fogDensity: 0.01,
+    sunHex: '#FFFFFF',
+    sunIntensity: 1.7,
+    hemiSkyHex: '#9CA3AF',
+    hemiGroundHex: '#1F2937',
+    plinthHex: '#374151',
+    tabletopHex: '#1F2937',
+    goldTrimHex: '#E6A93C',
+    trackLightHex: '#F3F4F6',
+    trackDarkHex: '#4B5563',
+  },
+  {
+    id: 'volcanic-ember-citadel',
+    name: 'Volcanic Ember Citadel',
+    subtitle: 'Dark volcanic basalt crags with warm glowing embers, molten stone trim, and dramatic smokey skies.',
+    skyHex: '#180B0B',
+    fogHex: '#220808',
+    fogDensity: 0.022,
+    sunHex: '#F97316',
+    sunIntensity: 1.5,
+    hemiSkyHex: '#EF4444',
+    hemiGroundHex: '#450A0A',
+    plinthHex: '#1C1917',
+    tabletopHex: '#18181B',
+    goldTrimHex: '#EA580C',
+    trackLightHex: '#FEE2E2',
+    trackDarkHex: '#450A0A',
+  },
+  {
+    id: 'frost-crystal-summit',
+    name: 'Frost Crystal Summit',
+    subtitle: 'Gleaming glacier peaks adorned with crystalline sapphire pillars, snowfall mist, and permafrost ice.',
+    skyHex: '#0C192C',
+    fogHex: '#0F233D',
+    fogDensity: 0.018,
+    sunHex: '#E0F2FE',
+    sunIntensity: 1.7,
+    hemiSkyHex: '#38BDF8',
+    hemiGroundHex: '#075985',
+    plinthHex: '#0C4A6E',
+    tabletopHex: '#0369A1',
+    goldTrimHex: '#BAE6FD',
+    trackLightHex: '#F0F9FF',
+    trackDarkHex: '#0369A1',
+  },
+  {
+    id: 'sunset-royal-bay',
+    name: 'Sunset Royal Bay',
+    subtitle: 'Golden hour splendor with warm amber skies, shimmering bronze ocean reflections, and regal twilight shadows.',
+    skyHex: '#451A03',
+    fogHex: '#7C2D12',
+    fogDensity: 0.016,
+    sunHex: '#FDE047',
+    sunIntensity: 1.8,
+    hemiSkyHex: '#FB923C',
+    hemiGroundHex: '#9A3412',
+    plinthHex: '#78350F',
+    tabletopHex: '#451A03',
+    goldTrimHex: '#F59E0B',
+    trackLightHex: '#FEF3C7',
+    trackDarkHex: '#9A3412',
+  },
+  {
+    id: 'tropical-paradise-cove',
+    name: 'Tropical Paradise Cove',
+    subtitle: 'Sun-drenched turquoise lagoons, palm-fringed coral sand, and refreshing ocean trade winds.',
+    skyHex: '#0284C7',
+    fogHex: '#0369A1',
+    fogDensity: 0.014,
+    sunHex: '#FFFBEB',
+    sunIntensity: 1.9,
+    hemiSkyHex: '#38BDF8',
+    hemiGroundHex: '#0D9488',
+    plinthHex: '#134E4A',
+    tabletopHex: '#0F766E',
+    goldTrimHex: '#FBBF24',
+    trackLightHex: '#CCFBF1',
+    trackDarkHex: '#115E59',
+  },
+];
+
+export function getBoardThemeById(id: string): BoardTheme {
+  const theme = BOARD_THEMES.find((t) => t.id === id);
+  if (!theme) {
+    return BOARD_THEMES[0];
+  }
+  return theme;
+}
