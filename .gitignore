@@ -17,3 +17,5 @@ coverage/
 release-artifacts/
 .wrangler/
 .aistudio/
+test-results/
+playwright-report/

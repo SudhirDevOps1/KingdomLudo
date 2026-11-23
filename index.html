@@ -3,18 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>KingdomLudo</title>
+    
+    <!-- Primary Page Metadata -->
+    <title>KingdomLudo 3D — The Royal 3D Tabletop Fantasy Island Ludo Experience</title>
     <meta
       name="description"
-      content="KingdomLudo — A stylized 3D fantasy island Ludo game featuring 12 animated kingdom heroes, deterministic rules, strategic AI, offline-first persistence, Firebase auth, and live WebSocket multiplayer."
+      content="Play KingdomLudo 3D — An AAA-quality 3D tabletop fantasy island Ludo game featuring 12 articulated heroes, living ocean PBR shaders, smart adaptive AI, offline Pass & Play, Supabase cloud sync, and authoritative online multiplayer."
     />
-    <meta property="og:title" content="KingdomLudo" />
+    <meta
+      name="keywords"
+      content="kingdomludo, 3d ludo, online multiplayer ludo, tabletop fantasy, threejs webgl game, pwa ludo, android ludo, strategic board game, dice game"
+    />
+    <meta name="author" content="SudhirDevOps1" />
+    <link rel="canonical" href="https://kingdomludo.com/" />
+
+    <!-- Open Graph / Facebook / Discord / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://kingdomludo.com/" />
+    <meta property="og:site_name" content="KingdomLudo 3D" />
+    <meta property="og:title" content="KingdomLudo 3D — The Royal 3D Tabletop Fantasy Island" />
     <meta
       property="og:description"
-      content="Command 12 animated 3D fantasy heroes across a living enchanted island in offline Pass & Play, strategic AI, and authoritative online multiplayer."
+      content="Command 12 animated 3D heroes across 4 kingdoms in a living fantasy island. Play offline Pass & Play, challenge tactical bots, or compete in live online multiplayer rooms."
     />
-    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:alt" content="KingdomLudo 3D Fantasy Island Tabletop" />
+
+    <!-- Twitter / X Card -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://kingdomludo.com/" />
+    <meta name="twitter:title" content="KingdomLudo 3D — Royal Fantasy Island Ludo Experience" />
+    <meta
+      name="twitter:description"
+      content="Command 12 animated 3D heroes across 4 kingdoms in a living fantasy island. Play offline Pass & Play, challenge tactical bots, or compete in live online multiplayer rooms."
+    />
+    <meta name="twitter:image" content="/og-image.jpg" />
+    <meta name="twitter:creator" content="@SudhirDevOps1" />
+
+    <!-- PWA & Mobile Viewport Styling -->
     <meta name="theme-color" content="#10141E" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -24,12 +53,42 @@
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Schema.org JSON-LD for Search Engines & AI Crawlers -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "KingdomLudo",
+        "url": "https://kingdomludo.com/",
+        "image": "https://kingdomludo.com/og-image.jpg",
+        "description": "An AAA-quality 3D tabletop fantasy island Ludo game featuring 12 articulated heroes, living ocean PBR shaders, smart adaptive AI, offline Pass & Play, and authoritative online multiplayer.",
+        "genre": ["Tabletop", "Board Game", "Strategy", "Multiplayer"],
+        "gamePlatform": ["Web Browser", "Progressive Web App", "Android", "Desktop"],
+        "applicationCategory": "Game",
+        "operatingSystem": "Web, Android, iOS, Windows, macOS, Linux",
+        "inLanguage": "en",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "SudhirDevOps1",
+          "url": "https://github.com/SudhirDevOps1"
+        }
+      }
+    </script>
   </head>
   <body class="bg-[#10141E] text-[#E7E2D8] antialiased selection:bg-[#E6A93C]/30 selection:text-[#E7E2D8]">
     <div id="root"></div>

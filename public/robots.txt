@@ -1,0 +1,35 @@
+# ==============================================================================
+# KingdomLudo Robots Configuration
+# ==============================================================================
+
+# Search Engine Crawlers (Google, Bing, DuckDuckGo, Yandex, etc.)
+User-agent: *
+Allow: /
+
+# AI Crawlers & LLM Search Engines (ChatGPT, Perplexity, Gemini, Claude, Apple Intelligence)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+# Sitemap & LLM AI Context Location
+Sitemap: https://kingdomludo.com/sitemap.xml

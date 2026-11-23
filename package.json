@@ -11,7 +11,15 @@
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit && eslint .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js}": [
+      "eslint --fix"
+    ]
   },
   "dependencies": {
     "@capacitor/android": "^8.6.2",
@@ -53,12 +61,15 @@
   "devDependencies": {
     "@capacitor/cli": "^8.6.2",
     "@cloudflare/workers-types": "^5.20261121.1",
+    "@playwright/test": "^1.65.1",
     "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.2",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
     "typescript": "^7.0.2",
