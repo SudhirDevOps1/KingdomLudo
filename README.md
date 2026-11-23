@@ -6,7 +6,7 @@
   ### *The Royal 3D Tabletop Fantasy Island Experience*
 
   <p align="center">
-    <b>Play as 12 Articulated Heroes • 4 Legendary Kingdoms • Living PBR Ocean Island • Authoritative Multiplayer</b>
+    <b>Command 12 Articulated Heroes • 4 Mythic Kingdoms • Living Ocean PBR Island • Authoritative Multiplayer</b>
   </p>
 
   <p align="center">
@@ -21,7 +21,8 @@
   <p align="center">
     <a href="#-quick-start"><b>⚡ Quick Start</b></a> •
     <a href="#-the-four-kingdom-crests"><b>🏰 The 4 Kingdoms</b></a> •
-    <a href="#-hero-animation-studio"><b>⚔️ 12 Heroes</b></a> •
+    <a href="#-in-game-showcase--visual-gallery"><b>📸 Live Showcase</b></a> •
+    <a href="#-key-features"><b>⚔️ Features</b></a> •
     <a href="#-architecture--tech-stack"><b>🛠️ Architecture</b></a> •
     <a href="#-github-secrets--environment-configuration"><b>🔐 GitHub Setup</b></a> •
     <a href="./docs/"><b>📖 Full Docs</b></a>
@@ -29,7 +30,7 @@
 
   <br />
 
-  <img src="./docs/assets/banner_courtyard.jpg" alt="KingdomLudo Royal Island Banner" width="100%" style="border-radius: 18px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.15);" />
+  <img src="./docs/assets/banner_courtyard.jpg" alt="KingdomLudo Royal Courtyard Cover Banner" width="100%" style="border-radius: 18px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.15);" />
 
 </div>
 
@@ -66,12 +67,110 @@ Choose your allegiance across four noble houses, each featuring bespoke heraldry
 
 ---
 
-## 🎮 Gameplay Preview & Visual Experience
+## 📸 In-Game Showcase & Visual Gallery
+
+All visuals below are captured directly from live gameplay in **KingdomLudo 3D**:
+
+### 🎲 1. Flagship 3D Tabletop Experience
+*Living fantasy island with procedural PBR ocean waves, ivory/cream stone track, star sanctuaries, animated 3D dice in the dais, and interactive 4-corner player HUD cards.*
 
 <div align="center">
-  <img src="./docs/assets/gameplay_preview.png" alt="KingdomLudo 3D In-Game Tabletop" width="90%" style="border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.1);" />
-  <p><i>Live 3D Fantasy Island: Procedural PBR ocean waves, ivory/cream stone track, star safe-havens, and animated 4-corner HUD.</i></p>
+  <img src="./docs/assets/showcase_3d_tabletop.png" alt="3D Tabletop Living Island" width="100%" style="border-radius: 16px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.15);" />
 </div>
+
+<br />
+
+### 👑 2. Kingdom Command & 3D Hero Wardrobe
+*Command central dashboard with instant offline/online matchmaking queues, alongside the interactive 3D Animation Studio featuring full 360° turntable, 14 animation states, and armor customization.*
+
+<table align="center" width="100%">
+  <tr>
+    <td align="center" width="50%">
+      <img src="./docs/assets/showcase_dashboard.png" width="100%" alt="Kingdom Command Dashboard" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" /><br />
+      <b>🏰 Kingdom Command Dashboard</b><br />
+      <sub>Player profile, instant matchmaking, and one-click match resume</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="./docs/assets/showcase_animation_studio.png" width="100%" alt="3D Hero Animation Studio" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" /><br />
+      <b>⚔️ 3D Animation Studio & Wardrobe</b><br />
+      <sub>12 heroes, 14 animation states, speed slider & 360° orbit preview</sub>
+    </td>
+  </tr>
+</table>
+
+<br />
+
+### 🌋 3. Dynamic Environmental Themes
+*Experience tabletop battles across diverse atmospheres with custom lighting, particle systems, and terrain styling.*
+
+<table align="center" width="100%">
+  <tr>
+    <td align="center" width="50%">
+      <img src="./docs/assets/showcase_theme_glacial.png" width="100%" alt="Glacial Citadel Theme" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" /><br />
+      <b>❄️ Glacial Citadel Theme</b><br />
+      <sub>Snow-blanketed sanctuary, frozen columns, and drifting blizzard flakes</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="./docs/assets/showcase_theme_obsidian.png" width="100%" alt="Obsidian Caldera Theme" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" /><br />
+      <b>🔥 Obsidian Caldera Theme</b><br />
+      <sub>Molten volcanic terrain, glowing lava embers, and dark stone dais</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="./docs/assets/showcase_board_themes.png" width="90%" alt="3D Board Themes Gallery" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" /><br />
+      <b>🎨 6 Atmospheric Board Themes Selector</b><br />
+      <sub>Royal Courtyard • Celestial Sky Citadel • Twilight Arcane • Verdant Jungle • Artisan Wood & Brass • Tournament Hall</sub>
+    </td>
+  </tr>
+</table>
+
+<br />
+
+### 🌐 4. Multiplayer Lobbies, Match Rules & Game Modes
+*Complete multiplayer freedom with private 6-character room codes, flexible rule toggles, and dedicated skirmish challenges.*
+
+<table align="center" width="100%">
+  <tr>
+    <td align="center" width="50%">
+      <img src="./docs/assets/showcase_multiplayer.png" width="100%" alt="Online Multiplayer Lobbies" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" /><br />
+      <b>🌐 Online Multiplayer & Matchmaking</b><br />
+      <sub>Authoritative WebSocket server, 6-character invite codes, and 2P/4P live queue</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="./docs/assets/showcase_match_setup.png" width="100%" alt="Match Setup & Custom Rules" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" /><br />
+      <b>⚙️ Match Setup & Custom Rules Engine</b><br />
+      <sub>Configure bonus rolls, capture rewards, safe star rules, and AI bot seats</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="./docs/assets/showcase_game_modes.png" width="90%" alt="Game Modes & Challenges Hub" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" /><br />
+      <b>🎮 Game Modes & Practice Skirmish Challenges</b><br />
+      <sub>Frontline Duel (Easy 2P) • Royal Melee (Medium 4P) • Veteran's Crucible (Hard 4P) • Royal Chronicle</sub>
+    </td>
+  </tr>
+</table>
+
+<br />
+
+### 🕊️ 5. Scenic Island Exploration & 2D SVG Fallback
+*Freely explore the 3D island with orbit camera controls, or switch to lightweight 2D SVG mode for battery efficiency.*
+
+<table align="center" width="100%">
+  <tr>
+    <td align="center" width="50%">
+      <img src="./docs/assets/showcase_island_explore.png" width="100%" alt="Living Island Exploration" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" /><br />
+      <b>🧭 Living Island Exploration Mode</b><br />
+      <sub>Free camera viewpoints: Cascades & Shore, Royal Citadel, Whispering Pines</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="./docs/assets/showcase_2d_fallback.png" width="100%" alt="2D SVG Lightweight Fallback" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" /><br />
+      <b>⚡ 2D Lightweight SVG Fallback Mode</b><br />
+      <sub>Clean, hardware-accelerated top-down board with instant toggle anytime</sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -242,7 +341,7 @@ KingdomLudo/
 ├── .github/workflows/            # CI, CodeQL, Cloudflare Pages, Android Workflows
 ├── android/                      # Native Capacitor Android 15/16 Project (Java 21)
 ├── docs/                         # In-Depth Guides & Technical Architecture
-│   ├── assets/                   # High-res Cover Banners, Icons, & Kingdom Crests
+│   ├── assets/                   # High-res Cover Banners, Icons, & 11 Gameplay Showcases
 │   ├── ARCHITECTURE.md           # System Architecture & Topology Map
 │   ├── AUTHENTICATION.md         # Supabase Auth & Guest-First Spec
 │   ├── DATABASE_CONFIGURATION.md # Supabase PostgreSQL & SQLite Guide
