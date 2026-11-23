@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import http from 'http';
 import path from 'path';
 import { WebSocketServer } from 'ws';
@@ -8,6 +9,28 @@ import { AuthoritativeGameServer } from './server/gameServer';
 
 export async function createAppServer(options?: { attachVite?: boolean; port?: number }) {
   const app = express();
+  app.set('trust proxy', 1);
+
+  // Global HTTP rate limiter protecting all routes (API & static file serving) against DoS
+  const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 1000,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' },
+  });
+  app.use(globalLimiter);
+
+  // Stricter rate limiter for API endpoints
+  const apiLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 120,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'API rate limit exceeded. Please slow down.' },
+  });
+  app.use('/api', apiLimiter);
+
   app.use(express.json({ limit: '256kb' }));
 
   const { provider: db, validation } = await createConfiguredDatabaseProvider(process.env);
@@ -67,8 +90,8 @@ export async function createAppServer(options?: { attachVite?: boolean; port?: n
       });
     }
   });
-  const rateLimit = Number(process.env.WS_RATE_LIMIT_PER_MIN || 120);
-  const gameServer = new AuthoritativeGameServer(wss, db, rateLimit);
+  const wsRateLimit = Number(process.env.WS_RATE_LIMIT_PER_MIN || 120);
+  const gameServer = new AuthoritativeGameServer(wss, db, wsRateLimit);
 
   app.get('/api/rooms/:code', (req, res) => {
     const room = gameServer.getRoomSummary(req.params.code);

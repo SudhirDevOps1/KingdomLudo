@@ -104,10 +104,41 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
     });
   }
 
+  private lsEncrypt(text: string): string {
+    try {
+      const encoded = encodeURIComponent(text);
+      let out = '';
+      for (let i = 0; i < encoded.length; i++) {
+        out += String.fromCharCode(encoded.charCodeAt(i) ^ 0x5b);
+      }
+      return 'enc:' + btoa(out);
+    } catch {
+      return text;
+    }
+  }
+
+  private lsDecrypt(raw: string): string {
+    try {
+      if (raw.startsWith('enc:')) {
+        const decoded = atob(raw.slice(4));
+        let out = '';
+        for (let i = 0; i < decoded.length; i++) {
+          out += String.fromCharCode(decoded.charCodeAt(i) ^ 0x5b);
+        }
+        return decodeURIComponent(out);
+      }
+      return raw;
+    } catch {
+      return raw;
+    }
+  }
+
   private lsGet<T>(key: string): T | null {
     try {
       const raw = localStorage.getItem(key);
-      return raw ? (JSON.parse(raw) as T) : null;
+      if (!raw) return null;
+      const decrypted = this.lsDecrypt(raw);
+      return JSON.parse(decrypted) as T;
     } catch {
       return null;
     }
@@ -115,7 +146,9 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
 
   private lsSet(key: string, val: unknown): void {
     try {
-      localStorage.setItem(key, JSON.stringify(val));
+      const serialized = JSON.stringify(val);
+      const encrypted = this.lsEncrypt(serialized);
+      localStorage.setItem(key, encrypted);
     } catch {
       // Ignore storage quota exceptions
     }
@@ -174,7 +207,9 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
   public async saveProfile(profile: StoredProfile): Promise<void> {
     await this.init();
     if (!this.db) {
-      this.lsSet('ck_profile', profile);
+      // Security: Strip PII and account identity fields (email, uid) before saving to localStorage fallback
+      const { email: _email, uid: _uid, ...safeProfile } = profile;
+      this.lsSet('ck_profile', safeProfile);
       return;
     }
     await this.db.put('kv', profile, 'profile');
@@ -213,11 +248,16 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
       this.loadActiveMatch(),
     ]);
 
+    // Omit sensitive email from export payload to prevent cleartext leakage
+    const sanitizedProfile = profile
+      ? (({ email: _email, uid: _uid, ...rest }) => rest)(profile)
+      : null;
+
     const backup: BackupDataPayload = {
       format: 'kingdomludo_backup',
       version: '0.1.0-alpha.0',
       exportedAt: Date.now(),
-      profile,
+      profile: sanitizedProfile as StoredProfile | null,
       settings,
       history,
       activeMatch,
