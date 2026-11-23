@@ -16,11 +16,20 @@ android {
     signingConfigs {
         release {
             def keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
-            if (keystorePath) {
-                storeFile file(keystorePath)
-                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            def keystorePass = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            def keyAliasName = System.getenv("ANDROID_KEY_ALIAS")
+            def keyPass = System.getenv("ANDROID_KEY_PASSWORD")
+
+            if (keystorePath && keystorePass && keyAliasName && keyPass) {
+                def keystoreFile = file(keystorePath)
+                if (keystoreFile.exists()) {
+                    storeFile keystoreFile
+                    storePassword keystorePass
+                    keyAlias keyAliasName
+                    keyPassword keyPass
+                } else {
+                    logger.warn("WARNING: ANDROID_KEYSTORE_PATH specified but file does not exist: ${keystorePath}")
+                }
             }
         }
     }
@@ -30,8 +39,10 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            if (System.getenv("ANDROID_KEYSTORE_PATH")) {
+            if (signingConfigs.release.storeFile != null && signingConfigs.release.storeFile.exists()) {
                 signingConfig signingConfigs.release
+            } else {
+                logger.warn("NOTICE: Release build will be UNSIGNED. Provide release keystore environment variables to sign.")
             }
         }
         debug {

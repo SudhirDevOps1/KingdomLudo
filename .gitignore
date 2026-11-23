@@ -19,3 +19,19 @@ release-artifacts/
 .aistudio/
 test-results/
 playwright-report/
+
+# Keystores, Certificates & Release Signing Credentials
+*.jks
+*.keystore
+*.p12
+*.bks
+*.pem
+*.der
+*.pk8
+*.key
+keystore.properties
+signing.properties
+keystore_base64.txt
+release-keystore.jks
+KingdomLudo-Signing/
+

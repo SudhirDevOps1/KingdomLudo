@@ -331,6 +331,16 @@ Configure your repository secrets and variables directly here:
 - **Express Rate Limiting**: Global DoS throttling (`1000 req / 15m`) and API protections (`120 req / 1m`) active on all routes.
 - **Client Sanitization**: Personal Identifiable Information (PII) like emails are stripped before local fallback persistence, with XOR Base64 storage encryption.
 - **Authoritative Validation**: Dice rolls, token movements, and win conditions are calculated on the authoritative server or local engine, preventing client-side packet tampering.
+- **Android Signing & Keystore Protection**: PKCS12 release key separation (K1 developer-controlled vs K2 Play Console), ephemeral Base64 CI keystore materialization with automated `shred -u` destruction, and 3-copy offline backup strategy.
+
+---
+
+## 🤖 Android Release & Key Security Guides
+
+For production release builds, signing key management, and disaster recovery:
+- 📖 [Android Release Signing Guide](docs/ANDROID_RELEASE_SIGNING.md): Step-by-step JDK `keytool` PKCS12 generation, PowerShell Base64 export, and GitHub Secrets configuration.
+- 🛡️ [Android Key Backup & Recovery Playbook](docs/ANDROID_KEY_RECOVERY.md): 3-copy offline backup topology, AES-256 archive encryption, non-destructive `keytool -list` integrity audits, and Google Play PEPK migration.
+- 🔐 [GitHub Secrets Master Guide](docs/GITHUB_SECRETS.md): Complete setup for Cloudflare, Supabase, and Android CI/CD pipelines.
 
 ---
 
@@ -342,6 +352,8 @@ KingdomLudo/
 ├── android/                      # Native Capacitor Android 15/16 Project (Java 21)
 ├── docs/                         # In-Depth Guides & Technical Architecture
 │   ├── assets/                   # High-res Cover Banners, Icons, & 11 Gameplay Showcases
+│   ├── ANDROID_RELEASE_SIGNING.md# Android PKCS12 Keytool Generation & CI Signing Guide
+│   ├── ANDROID_KEY_RECOVERY.md   # 3-Copy Backup & Disaster Recovery Playbook
 │   ├── ARCHITECTURE.md           # System Architecture & Topology Map
 │   ├── AUTHENTICATION.md         # Supabase Auth & Guest-First Spec
 │   ├── DATABASE_CONFIGURATION.md # Supabase PostgreSQL & SQLite Guide

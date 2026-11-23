@@ -3,6 +3,9 @@ name: Android Release APK & AAB
 on:
   release:
     types: [published]
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:
@@ -39,12 +42,12 @@ jobs:
       - name: Sync Capacitor Android
         run: pnpm exec cap sync android
 
-      - name: Decode Release Keystore (when configured)
+      - name: Decode Release Keystore
         if: env.ANDROID_KEYSTORE_BASE64 != ''
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/release-keystore.jks
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/release-keystore.jks
 
       - name: Build Release APK & AAB
         working-directory: android
@@ -63,6 +66,21 @@ jobs:
             gradle assembleRelease bundleRelease
           fi
 
+      - name: Verify APK Signature (when signed)
+        if: env.ANDROID_KEYSTORE_BASE64 != ''
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          APK_FILE=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          if [ -n "$APK_FILE" ]; then
+            echo "Verifying signature for $APK_FILE..."
+            if command -v apksigner &> /dev/null; then
+              apksigner verify --verbose "$APK_FILE"
+            elif command -v jarsigner &> /dev/null; then
+              jarsigner -verify -verbose -certs "$APK_FILE" | grep "jar verified" || true
+            fi
+          fi
+
       - name: Generate SHA256 Checksums
         if: success()
         run: |
@@ -74,12 +92,16 @@ jobs:
           fi
 
       - name: Attach Artifacts to GitHub Release
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: release-artifacts/*
           prerelease: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
 
-      - name: Clean Up Keystore
+      - name: Secure Clean Up Keystore
         if: always()
-        run: rm -f android/release-keystore.jks
+        run: |
+          if [ -f android/release-keystore.jks ]; then
+            shred -u -z -n 3 android/release-keystore.jks 2>/dev/null || rm -f android/release-keystore.jks
+            echo "Release keystore securely shredded and removed."
+          fi
