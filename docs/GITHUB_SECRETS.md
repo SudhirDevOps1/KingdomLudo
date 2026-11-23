@@ -1,127 +1,94 @@
 # 🔐 GitHub Secrets & Variables Master Configuration Guide
 
-This guide provides step-by-step instructions on configuring **GitHub Secrets** and **GitHub Repository Variables** for the KingdomLudo CI/CD and deployment workflows.
+This guide provides direct links, exact copy-paste values, and step-by-step instructions for configuring **GitHub Encrypted Secrets** and **GitHub Repository Variables** for the KingdomLudo CI/CD and deployment pipelines.
 
 ---
 
-## 🧭 Navigation in GitHub Settings
+## 🧭 Direct GitHub Settings Link
 
-1. Open your repository on GitHub:
-   👉 **`https://github.com/SudhirDevOps1/KingdomLudo`**
-2. Click the **⚙️ Settings** tab in the top navigation bar.
-3. In the left-hand sidebar, scroll down to the **Security** category.
-4. Click **Secrets and variables** → choose **Actions**.
-5. You will see two tabs:
-   - **Secrets** tab: for sensitive keys, passwords, private tokens.
-   - **Variables** tab: for public configuration values like project names, IDs, URLs.
+Open this link directly in your browser:  
+👉 **[https://github.com/SudhirDevOps1/KingdomLudo/settings/secrets/actions](https://github.com/SudhirDevOps1/KingdomLudo/settings/secrets/actions)**
 
 ```text
-Repository Settings
-└── Secrets and variables
-    └── Actions
-        ├── Secrets   ──► [New repository secret]   (Encrypted & Masked)
-        └── Variables ──► [New repository variable] (Visible in plaintext)
+GitHub Repo: SudhirDevOps1/KingdomLudo
+└── Settings
+    └── Secrets and variables
+        └── Actions
+            ├── [Secrets tab]   ──► Click "New repository secret"   (Encrypted & Masked)
+            └── [Variables tab] ──► Click "New repository variable" (Plaintext & Visible)
 ```
 
 ---
 
-## 🔒 1. Secrets (Encrypted — Click "New repository secret")
+## 🔒 1. Encrypted Secrets (`New repository secret`)
 
-Secrets are permanently encrypted and masked in all build and workflow logs. Once added, you can update them, but you can never read them back from GitHub.
+Secrets are **permanently encrypted**. Once saved, they are masked (`***`) in all GitHub Actions build logs and cannot be read back by anyone.
 
-| Secret Name | Required By | Description & Value Format | Where to Obtain |
-| :--- | :--- | :--- | :--- |
-| **`CLOUDFLARE_API_TOKEN`** | `web-deploy.yml` | API Token with permission to deploy Cloudflare Pages | [Cloudflare Dashboard](https://dash.cloudflare.com/profile/api-tokens) → Create Custom Token → Template: **Edit Cloudflare Pages** |
-| **`VITE_SUPABASE_URL`** | `web-deploy.yml` | Supabase API endpoint (e.g. `https://xxxx.supabase.co`) | [Supabase Dashboard](https://supabase.com/dashboard) → Project Settings → **API** → Project URL |
-| **`VITE_SUPABASE_ANON_KEY`**| `web-deploy.yml` | Supabase public anonymous client API key | [Supabase Dashboard](https://supabase.com/dashboard) → Project Settings → **API** → `anon` `public` key |
-| **`SUPABASE_SERVICE_ROLE_KEY`** | Server / Edge | Server-side elevated admin key (never expose to frontend) | [Supabase Dashboard](https://supabase.com/dashboard) → Project Settings → **API** → `service_role` key |
-| **`POSTGRES_URL`** | Backend Server | PostgreSQL direct connection string (port 6543 / 5432) | Supabase Project Settings → **Database** → Connection String (URI format) |
-| **`ANDROID_KEYSTORE_BASE64`** | `android-release.yml` | Base64-encoded string of your Android release `.jks` file | Generated locally using `keytool` (see generator commands below) |
-| **`ANDROID_KEYSTORE_PASSWORD`** | `android-release.yml` | Password used when creating the release keystore | Your chosen keystore password |
-| **`ANDROID_KEY_ALIAS`** | `android-release.yml` | Key alias name inside the keystore (e.g. `kingdomludo-key`) | The alias name passed to `keytool` |
-| **`ANDROID_KEY_PASSWORD`** | `android-release.yml` | Password for the key alias | Your chosen alias password |
+Click **`New repository secret`** for each of the following:
 
----
-
-## 🌐 2. Variables (Plaintext — Click "New repository variable")
-
-Variables are visible in plaintext in the repository settings and are injected into workflow steps without masking.
-
-| Variable Name | Default / Example Value | Description |
-| :--- | :--- | :--- |
-| **`CLOUDFLARE_ACCOUNT_ID`** | `32-char hex string` | Your Cloudflare Account ID (Found in Cloudflare dashboard URL or sidebar) |
-| **`CLOUDFLARE_PAGES_PROJECT`**| `kingdomludo` | Target project name on Cloudflare Pages |
-| **`VITE_WS_URL`** | `wss://api.yourdomain.com/ws` | Remote WebSocket URL (Leave blank if frontend and server are hosted together) |
-| **`VITE_APP_NAME`** | `KingdomLudo` | Brand application name override |
+| # | Secret Name | Value Format & Example | Where & How to Get It (Direct Links) |
+| :-- | :--- | :--- | :--- |
+| **1** | **`CLOUDFLARE_API_TOKEN`** | `v4.0-...` *(40-char string)* | **Direct Link:** [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)<br />1. Click **Create Token**.<br />2. Find the template **Edit Cloudflare Pages** and click **Use template**.<br />3. Under Account Resources, select your account.<br />4. Click **Continue to summary** ➜ **Create Token**.<br />5. Copy the token immediately and paste here. |
+| **2** | **`VITE_SUPABASE_URL`** | `https://xxxx.supabase.co` | **Direct Link:** [Supabase Dashboard](https://supabase.com/dashboard)<br />1. Select your project.<br />2. In the left-hand sidebar, click ⚙️ **Project Settings** (at the very bottom).<br />3. Click **API**.<br />4. Under **Project URL**, copy the URL. |
+| **3** | **`VITE_SUPABASE_ANON_KEY`** | `eyJhbGciOi...` *(Long JWT token)* | **Direct Link:** [Supabase Dashboard](https://supabase.com/dashboard)<br />1. In the same **Project Settings ➜ API** page.<br />2. Under **Project API keys**, copy the **`anon` `public`** key. |
+| **4** | **`ANDROID_KEYSTORE_BASE64`** | `MIIKvgIBAzCC...` *(Base64 string)* | **Generated via PowerShell:** Run the 2 commands in [Section 3](#-3-how-to-generate-android-keystore-secrets-windows-powershell) below. It creates `keystore_base64.txt`. Copy the text inside and paste here. |
+| **5** | **`ANDROID_KEYSTORE_PASSWORD`** | *(Your chosen password)* | The password you typed when creating the keystore. |
+| **6** | **`ANDROID_KEY_ALIAS`** | `kingdomludo-key` | The alias name used during creation (`kingdomludo-key`). |
+| **7** | **`ANDROID_KEY_PASSWORD`** | *(Your chosen password)* | The key password (usually the same as keystore password). |
 
 ---
 
-## 🛠️ Step-by-Step Provider Guides
+## 🌐 2. Plaintext Variables (`New repository variable`)
 
-### A. How to Get Cloudflare Credentials
-1. **Cloudflare Account ID**:
-   - Log into [dash.cloudflare.com](https://dash.cloudflare.com).
-   - In the right-hand sidebar of your Overview or in the URL after `dash.cloudflare.com/`, copy the **Account ID** (e.g. `0123456789abcdef0123456789abcdef`).
-   - Add as a **Repository Variable**: `CLOUDFLARE_ACCOUNT_ID`.
-2. **Cloudflare API Token**:
-   - Go to [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens).
-   - Click **Create Token**.
-   - Use the **Edit Cloudflare Pages** template (or create custom with `Account → Cloudflare Pages → Edit`).
-   - Click **Continue to summary** → **Create Token**.
-   - Copy the token immediately and add as a **Repository Secret**: `CLOUDFLARE_API_TOKEN`.
+Variables are **visible in plain text** in the repository settings. They are used for non-secret configuration like project names, account IDs, and public URLs.
 
----
+Click the **`Variables`** tab ➜ Click **`New repository variable`** for each:
 
-### B. How to Get Supabase Credentials
-1. Open your project on [supabase.com/dashboard](https://supabase.com/dashboard).
-2. Go to **Project Settings (⚙️ icon at the bottom of the left sidebar)** → **API**.
-3. Under **Project URL**:
-   - Copy the URL (e.g. `https://xyzprojectref.supabase.co`).
-   - Add as a **Repository Secret**: `VITE_SUPABASE_URL`.
-4. Under **Project API keys**:
-   - Copy the `anon` `public` key.
-   - Add as a **Repository Secret**: `VITE_SUPABASE_ANON_KEY`.
+| # | Variable Name | Recommended Value | Where to Find / What It Means |
+| :-- | :--- | :--- | :--- |
+| **1** | **`CLOUDFLARE_ACCOUNT_ID`** | `32-character hex string` | **Direct Link:** [Cloudflare Dashboard](https://dash.cloudflare.com)<br />1. Log in to Cloudflare.<br />2. On the right-hand sidebar of your Overview (or in your browser address bar after `dash.cloudflare.com/`), copy your 32-character **Account ID**. |
+| **2** | **`CLOUDFLARE_PAGES_PROJECT`** | `kingdomludo` | The name of your Cloudflare Pages project (matches `kingdomludo` in `wrangler.jsonc`). |
+| **3** | **`VITE_WS_URL`** | *(Leave empty or enter remote WSS)* | If client and server are hosted on the same domain, leave this empty. If hosting frontend on Cloudflare Pages and backend on Render/Fly.io, enter e.g. `wss://game.yourdomain.com/ws`. |
+| **4** | **`VITE_APP_NAME`** | `KingdomLudo` | Display name for the application title bar and PWA header. |
 
 ---
 
-### C. How to Generate Android Release Keystore & Base64
-If you want GitHub Actions to compile and sign a production Android Release APK (`android-release.yml`):
+## 🛠️ 3. How to Generate Android Keystore Secrets (Windows PowerShell)
 
-#### 1. Generate Keystore via Terminal
-Open PowerShell (Windows) or Bash (Linux/macOS):
-```bash
+If you want GitHub Actions to compile and sign production Android Release APKs and Google Play App Bundles (AABs):
+
+### Step 1: Open PowerShell as Administrator and run:
+```powershell
 keytool -genkey -v -keystore kingdomludo-release.jks -alias kingdomludo-key -keyalg RSA -keysize 2048 -validity 10000
 ```
-*(Enter a secure password and remember it).*
+- It will ask for a password (e.g. `KingdomSecret2026!`). Remember this password.
+- It will ask for your name/organization. You can fill them in or press Enter.
+- Type `yes` to confirm.
 
-#### 2. Convert `.jks` file to Base64 String
-
-**On Windows (PowerShell):**
+### Step 2: Convert the Keystore file into Base64 text:
 ```powershell
 [Convert]::ToBase64String([IO.File]::ReadAllBytes("kingdomludo-release.jks")) | Set-Content -Path "keystore_base64.txt"
 ```
 
-**On Linux or macOS:**
-```bash
-base64 -w 0 kingdomludo-release.jks > keystore_base64.txt
-```
-
-#### 3. Save into GitHub Secrets
-1. Open `keystore_base64.txt` and copy the entire text.
-2. In GitHub Secrets, create **`ANDROID_KEYSTORE_BASE64`** and paste the text.
-3. Create **`ANDROID_KEYSTORE_PASSWORD`** with your keystore password.
-4. Create **`ANDROID_KEY_ALIAS`** with `kingdomludo-key`.
-5. Create **`ANDROID_KEY_PASSWORD`** with your key alias password.
+### Step 3: Add to GitHub Secrets:
+1. Open `keystore_base64.txt` in Notepad.
+2. Select All (`Ctrl + A`) and Copy (`Ctrl + C`).
+3. In [GitHub Secrets](https://github.com/SudhirDevOps1/KingdomLudo/settings/secrets/actions), click **New repository secret**:
+   - Name: `ANDROID_KEYSTORE_BASE64`
+   - Secret: *Paste the Base64 text*
+4. Create `ANDROID_KEYSTORE_PASSWORD` with your password.
+5. Create `ANDROID_KEY_ALIAS` with `kingdomludo-key`.
+6. Create `ANDROID_KEY_PASSWORD` with your key password.
 
 ---
 
-## 🚦 Workflows & What Triggers Them
+## 🚦 Summary: Which Workflows Use What?
 
-| Workflow | Trigger | Secrets / Variables Used | Output |
+| Workflow File | Purpose | Secrets Used | Variables Used |
 | :--- | :--- | :--- | :--- |
-| **CI (`ci.yml`)** | Push & Pull Request on `main` | None (runs in zero-config mode) | Runs TypeScript strict check, ESLint, Vitest, and Vite build |
-| **CodeQL (`codeql.yml`)** | Push, PR & Weekly Cron | `GITHUB_TOKEN` (Built-in) | Scans for security vulnerabilities (CWE alerts) |
-| **Android Debug APK (`android-debug.yml`)** | Push to `main` & Manual Dispatch | None (signs with debug key) | Produces unsigned Debug APK artifact for instant testing |
-| **Deploy Web & PWA (`web-deploy.yml`)** | Push to `main` & Manual Dispatch | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `VITE_SUPABASE_*` | Deploys live web app to Cloudflare Pages |
-| **Android Release (`android-release.yml`)** | Release Published or Manual Dispatch | `ANDROID_KEYSTORE_*` | Compiles signed release APK and Android App Bundle (AAB) for Google Play |
-| **Release Please (`release-please.yml`)** | Push to `main` | `GITHUB_TOKEN` | Automates semantic versioning, tags, and changelog updates |
+| **`web-deploy.yml`** | Builds and publishes Web & PWA to Cloudflare Pages | `CLOUDFLARE_API_TOKEN`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_PAGES_PROJECT`, `VITE_WS_URL`, `VITE_APP_NAME` |
+| **`android-release.yml`** | Generates signed production Release APK & AAB | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | None |
+| **`android-debug.yml`** | Builds nightly debug APK for testing | None (uses default debug keystore) | None |
+| **`ci.yml`** | Strict typecheck, ESLint, Vitest, and production build | None (runs zero-config with embedded SQLite) | None |
+| **`codeql.yml`** | Continuous security scanning (0 open alerts) | `GITHUB_TOKEN` *(Built-in)* | None |
+| **`release-please.yml`** | Automated semantic versioning and changelogs | `GITHUB_TOKEN` *(Built-in)* | None |

@@ -299,29 +299,29 @@ pnpm start
 
 ## 🔐 GitHub Secrets & Environment Configuration
 
-When deploying through GitHub Actions or hosting on Cloudflare Pages and Supabase, configure your repository secrets and variables in:
-👉 **`GitHub Repo → Settings → Secrets and variables → Actions`**
+Configure your repository secrets and variables directly here:  
+👉 **[https://github.com/SudhirDevOps1/KingdomLudo/settings/secrets/actions](https://github.com/SudhirDevOps1/KingdomLudo/settings/secrets/actions)**
 
-### 🔑 Repository Secrets (Encrypted)
-| Secret Name | Required By | Description |
+### 🔑 Repository Secrets (Encrypted — Click "New repository secret")
+| Secret Name | Required By | Description & Where to Find |
 | :--- | :--- | :--- |
-| `CLOUDFLARE_API_TOKEN` | `web-deploy.yml` | Cloudflare API Token with `Cloudflare Pages: Edit` permissions |
-| `VITE_SUPABASE_URL` | Client Vite | Your Supabase project URL (`https://xyz.supabase.co`) |
-| `VITE_SUPABASE_ANON_KEY` | Client Vite | Your Supabase anonymous public API key |
-| `ANDROID_KEYSTORE_BASE64` | `android-release.yml` | Base64-encoded release `.jks` keystore |
-| `ANDROID_KEYSTORE_PASSWORD` | `android-release.yml` | Password for the release keystore |
-| `ANDROID_KEY_ALIAS` | `android-release.yml` | Key alias name inside the keystore |
+| `CLOUDFLARE_API_TOKEN` | `web-deploy.yml` | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) ➜ Template: *Edit Cloudflare Pages* |
+| `VITE_SUPABASE_URL` | Client Vite | [Supabase Dashboard](https://supabase.com/dashboard) ➜ Project Settings ➜ API ➜ Project URL |
+| `VITE_SUPABASE_ANON_KEY` | Client Vite | [Supabase Dashboard](https://supabase.com/dashboard) ➜ Project Settings ➜ API ➜ `anon` `public` key |
+| `ANDROID_KEYSTORE_BASE64` | `android-release.yml` | Base64 string generated from release `.jks` (see [Guide](./docs/GITHUB_SECRETS.md)) |
+| `ANDROID_KEYSTORE_PASSWORD` | `android-release.yml` | Password used during keystore generation |
+| `ANDROID_KEY_ALIAS` | `android-release.yml` | Key alias name (`kingdomludo-key`) |
 | `ANDROID_KEY_PASSWORD` | `android-release.yml` | Password for the key alias |
 
-### 🌐 Repository Variables (Plaintext)
-| Variable Name | Default Value | Description |
+### 🌐 Repository Variables (Plaintext — Click "New repository variable")
+| Variable Name | Default Value | Description & Where to Find |
 | :--- | :--- | :--- |
-| `CLOUDFLARE_ACCOUNT_ID` | *(Your Account ID)* | 32-character Cloudflare Account ID |
-| `CLOUDFLARE_PAGES_PROJECT` | `kingdomludo` | Target project name on Cloudflare Pages |
+| `CLOUDFLARE_ACCOUNT_ID` | *(Your Account ID)* | [Cloudflare Dashboard](https://dash.cloudflare.com) ➜ 32-character Account ID from sidebar or URL |
+| `CLOUDFLARE_PAGES_PROJECT` | `kingdomludo` | Project name on Cloudflare Pages |
 | `VITE_WS_URL` | *(empty = same host)* | Remote WebSocket server URL (e.g. `wss://game.yourdomain.com/ws`) |
 | `VITE_APP_NAME` | `KingdomLudo` | Custom display application title |
 
-📖 **For full, step-by-step setup instructions with screenshots and command-line generators, read [`docs/GITHUB_SECRETS.md`](./docs/GITHUB_SECRETS.md).**
+📖 **For the complete, copy-paste tutorial and PowerShell keystore generator commands, see [`docs/GITHUB_SECRETS.md`](./docs/GITHUB_SECRETS.md).**
 
 ---
 
