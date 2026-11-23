@@ -2,12 +2,12 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "com.kingdomludo.app"
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.kingdomludo.app"
         minSdk 24
-        targetSdk 35
+        targetSdk 36
         versionCode System.getenv("ANDROID_VERSION_CODE")?.toInteger() ?: 100
         versionName System.getenv("ANDROID_VERSION_NAME") ?: "0.1.0-alpha.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

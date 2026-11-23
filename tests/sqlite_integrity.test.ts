@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import path from 'path';
 import fs from 'fs';
@@ -5,11 +6,16 @@ import { SqliteAdapter } from '../server/backend/adapters/sqliteAdapter';
 
 describe('Local Embedded SQLite Database Verification', () => {
   it('automatically connects, creates schema migrations, and prepares all tables', async () => {
-    const testDbPath = path.resolve(process.cwd(), './data/kingdom-ludo.sqlite');
-    expect(fs.existsSync(testDbPath)).toBe(true);
+    const dataDir = path.resolve(process.cwd(), './data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    const testDbPath = path.join(dataDir, 'kingdom-ludo.sqlite');
 
     const adapter = new SqliteAdapter(testDbPath);
     await adapter.connect();
+
+    expect(fs.existsSync(testDbPath)).toBe(true);
 
     const health = await adapter.healthCheck();
     expect(health.ok).toBe(true);
