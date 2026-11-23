@@ -1,46 +1,112 @@
-# 👑 KingdomLudo 3D
+<div align="center">
 
-[![CI](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/ci.yml/badge.svg)](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/ci.yml)
-[![CodeQL Security Analysis](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/codeql.yml/badge.svg)](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/codeql.yml)
-[![Android Debug APK](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/android-debug.yml/badge.svg)](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/android-debug.yml)
-[![Deploy Web & PWA](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/web-deploy.yml/badge.svg)](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/web-deploy.yml)
-[![Release Please](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/release-please.yml/badge.svg)](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/release-please.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Security: 0 Open Alerts](https://img.shields.io/badge/CodeQL-0%20Alerts%20Fixed-brightgreen)](https://github.com/SudhirDevOps1/KingdomLudo/security/code-scanning)
+  <img src="./docs/assets/app_icon.jpg" alt="KingdomLudo Royal Crown Icon" width="120" height="120" style="border-radius: 26px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45); border: 2px solid rgba(212, 175, 55, 0.4);" />
 
-> **KingdomLudo** is an AAA-styled, full-fidelity 3D tabletop fantasy island Ludo experience built with **React 19**, **Three.js**, **TypeScript**, **Supabase**, **Cloudflare Pages/Workers**, **Node.js/Express WebSockets**, and **Capacitor 8 Android Native**.
+  # 👑 KINGDOMLUDO 3D
+  ### *The Royal 3D Tabletop Fantasy Island Experience*
+
+  <p align="center">
+    <b>Play as 12 Articulated Heroes • 4 Legendary Kingdoms • Living PBR Ocean Island • Authoritative Multiplayer</b>
+  </p>
+
+  <p align="center">
+    <a href="https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/ci.yml"><img src="https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/ci.yml/badge.svg" alt="CI Status" /></a>
+    <a href="https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/codeql.yml"><img src="https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/codeql.yml/badge.svg" alt="CodeQL Security" /></a>
+    <a href="https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/android-debug.yml"><img src="https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/android-debug.yml/badge.svg" alt="Android APK" /></a>
+    <a href="https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/web-deploy.yml"><img src="https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/web-deploy.yml/badge.svg" alt="Cloudflare Pages" /></a>
+    <a href="https://github.com/SudhirDevOps1/KingdomLudo/security/code-scanning"><img src="https://img.shields.io/badge/Security-0%20Open%20Alerts-brightgreen" alt="CodeQL Clean" /></a>
+    <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
+  </p>
+
+  <p align="center">
+    <a href="#-quick-start"><b>⚡ Quick Start</b></a> •
+    <a href="#-the-four-kingdom-crests"><b>🏰 The 4 Kingdoms</b></a> •
+    <a href="#-hero-animation-studio"><b>⚔️ 12 Heroes</b></a> •
+    <a href="#-architecture--tech-stack"><b>🛠️ Architecture</b></a> •
+    <a href="#-github-secrets--environment-configuration"><b>🔐 GitHub Setup</b></a> •
+    <a href="./docs/"><b>📖 Full Docs</b></a>
+  </p>
+
+  <br />
+
+  <img src="./docs/assets/banner_courtyard.jpg" alt="KingdomLudo Royal Island Banner" width="100%" style="border-radius: 18px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.15);" />
+
+</div>
 
 ---
 
-## 🌟 Highlights & Key Features
+## 🏰 The Four Kingdom Crests
 
-### 🏰 1. Living 3D Fantasy Island Tabletop
-- **Exact 15×15 Ludo Topology**: 52-cell main perimeter, 8 star safe zones, 4 colored home columns, and the central Royal Crown Sanctuary.
-- **Dynamic PBR Island**: Animated ocean shaders, cascading cliffside waterfalls, atmospheric mist, fluttering kingdom banners, dynamic day/sunset lighting, and floating particles.
-- **6 Royal Environments**: Selectable themes including *Enchanted Royal Courtyard*, *Obsidian Caldera*, *Astral Void*, *Sunken Atlantis*, *Glacial Citadel*, and *Neon Cyber-Kingdom*.
+Choose your allegiance across four noble houses, each featuring bespoke heraldry, royal sanctuaries, and three distinct hero classes:
 
-### ⚔️ 2. 12 Articulated 3D Heroes & Animation Studio
-- **4 Distinct Kingdoms**:
-  - 🔴 **Crimson Spire**: Lord Ignis, Lady Ember, General Ash
-  - 🔵 **Cobalt Bastion**: Prince Tide, Sentinel Wave, Admiral Marina
-  - 🟢 **Emerald Grove**: Warden Grove, Huntress Thorn, Sage Leaf
-  - 🟡 **Sovereign Sun**: King Aurelius, Knight Dawn, High Cleric Sol
-- **14 Procedural & Skeletal Animation States**: Natural breathing idle, walking cycle with foot contact, energetic running, jump & anticipation, impact landing compression, royal celebration, token capture slam, and crown victory fanfare.
-- **Customization Studio**: 3 interchangeable armor sets, royal colorways, accessories, dynamic camera orbit controls, and external `.glb` model support.
+<table align="center" width="100%">
+  <tr>
+    <td align="center" width="25%">
+      <img src="./docs/assets/crest_red.jpg" width="200" alt="Crimson Spire Crest" style="border-radius: 14px; box-shadow: 0 8px 24px rgba(220, 38, 38, 0.3);" /><br /><br />
+      <b>🔴 CRIMSON SPIRE</b><br />
+      <sub><b>Lord Ignis</b> (Leader)<br /><b>Lady Ember</b> (Assassin)<br /><b>General Ash</b> (Tank)</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="./docs/assets/crest_blue.jpg" width="200" alt="Cobalt Bastion Crest" style="border-radius: 14px; box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);" /><br /><br />
+      <b>🔵 COBALT BASTION</b><br />
+      <sub><b>Prince Tide</b> (Leader)<br /><b>Sentinel Wave</b> (Guardian)<br /><b>Admiral Marina</b> (Tactician)</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="./docs/assets/crest_green.jpg" width="200" alt="Emerald Grove Crest" style="border-radius: 14px; box-shadow: 0 8px 24px rgba(22, 163, 74, 0.3);" /><br /><br />
+      <b>🟢 EMERALD GROVE</b><br />
+      <sub><b>Warden Grove</b> (Leader)<br /><b>Huntress Thorn</b> (Ranger)<br /><b>Sage Leaf</b> (Mystic)</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="./docs/assets/crest_yellow.jpg" width="200" alt="Sovereign Sun Crest" style="border-radius: 14px; box-shadow: 0 8px 24px rgba(234, 179, 8, 0.3);" /><br /><br />
+      <b>🟡 SOVEREIGN SUN</b><br />
+      <sub><b>King Aurelius</b> (Monarch)<br /><b>Knight Dawn</b> (Paladin)<br /><b>High Cleric Sol</b> (Healer)</sub>
+    </td>
+  </tr>
+</table>
 
-### 🎲 3. Authoritative Multiplayer & Smart AI
-- **Guest-First Architecture**: Instant play with cryptographic guest sessions (`gst_...`) — zero sign-up friction.
-- **Supabase Cloud Sync**: Optional registered account authentication (Email/Password, Magic Link, OAuth) with cross-device statistics, achievements, and unlocked outfits.
-- **Anti-Cheat Authoritative Engine**: Server-enforced turn timing, CSPRNG cryptographically secure dice rolls (`crypto.randomInt`), private 6-character room codes (`?room=CODE`), and automatic reconnect match state recovery.
-- **Adaptive Bot AI**: Three distinct AI personas:
-  - 🟢 **Easy (Casual)**: Random valid moves, light defense.
-  - 🟡 **Medium (Tactical)**: Balanced safe-zone prioritization, captures opportunities when available.
-  - 🔴 **Hard (Grandmaster)**: Strategic risk analysis, min-max capture aggression, defensive stacking, and endgame efficiency.
+---
 
-### 📱 4. Cross-Platform: Web, PWA & Native Android
-- **Progressive Web App (PWA)**: Offline-first asset caching with Workbox and custom Service Worker.
-- **Capacitor 8 Native Android**: Full Android 15/16 and Java 21 compatibility (`com.kingdomludo.app`) with custom adaptive icons, splash screens, immersive status bars, and hardware haptics.
-- **2D Lightweight Fallback**: Automatic detection of low-power or non-WebGL devices, live 2D SVG board toggle, and Zen full-viewport play mode.
+## 🎮 Gameplay Preview & Visual Experience
+
+<div align="center">
+  <img src="./docs/assets/gameplay_preview.png" alt="KingdomLudo 3D In-Game Tabletop" width="90%" style="border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.1);" />
+  <p><i>Live 3D Fantasy Island: Procedural PBR ocean waves, ivory/cream stone track, star safe-havens, and animated 4-corner HUD.</i></p>
+</div>
+
+---
+
+## 🌟 Key Features
+
+### 🎲 1. Authentic 3D Tabletop Ludo Engine
+- **Accurate 15×15 Board Topology**: 52-cell main track, 8 star sanctuaries (safe zones), 4 colored home runways, and the central Royal Crown victory dais.
+- **Support for 2, 3, or 4 Players**: Automatic seat configuration and active lane lighting.
+- **CSPRNG Cryptographic Dice Rolls**: Online rolls generated server-side with Node.js `crypto.randomInt(1, 7)`; offline rolls use `crypto.getRandomValues` rejection sampling.
+- **Smart Adaptive AI**: 3 personality tiers:
+  - 🟢 **Easy (Casual)**: Relaxed moves, casual pace.
+  - 🟡 **Medium (Tactical)**: Balanced safe-zone defense and timely attacks.
+  - 🔴 **Hard (Grandmaster)**: Ruthless capture prioritization, defensive stacking, and endgame calculation.
+
+### ⚔️ 2. Hero Animation Studio & Customization
+- **12 Original Articulated Heroes**: Multi-part 3D character meshes with customizable armor sets, weapons, and colorways.
+- **14 Procedural & Skeletal Animation States**:
+  - `Idle` (natural breathing & subtle weight shifts)
+  - `Walk` (synchronized foot contact & arm swing)
+  - `Run` (energetic forward sprint with body lean)
+  - `Jump & Land` (knee impact compression & bounce recovery)
+  - `Celebrate & Victory` (royal fanfare, backflips, and crown salute)
+  - `Capture Slam` (devastating token capture strike)
+- **Studio Orbit Controls**: Rotate, zoom, inspect wireframes, test individual animation clips, and import custom external `.glb` models via `GLTFLoader`.
+
+### 🌐 3. Authoritative Multiplayer & Cloud Sync
+- **Guest-First Architecture**: Jump straight into the game with cryptographic guest sessions (`gst_...`) — zero mandatory sign-up screens.
+- **Supabase Cloud Sync**: Optional email or social login to preserve cross-device match statistics, leaderboard rankings, and unlocked cosmetics.
+- **Express + WebSocket Engine**: Private 6-character room codes (`?room=CODE`), turn-timer enforcers, disconnect recovery, and public matchmaking lobbies.
+- **Cloudflare Edge Ready**: Cloudflare Pages + Workers + Durable Objects for ultra-low latency serverless edge gameplay.
+
+### 📱 4. Cross-Platform: PWA & Native Android
+- **Progressive Web App**: Offline-ready Workbox service worker caching models, textures, and sound FX for 100% offline flight/travel play.
+- **Capacitor 8 Native Android**: Compiled with modern Java 21 & Android Gradle Plugin 8.9.1 (`com.kingdomludo.app`) with custom adaptive icons, edge-to-edge UI, and physical vibration haptics.
+- **2D Instant Fallback**: Hardware-accelerated 2D SVG board mode for older or low-battery mobile devices.
 
 ---
 
@@ -78,27 +144,27 @@
                          └─────────────────────────────┘
 ```
 
-| Layer | Technologies |
+| Layer | Technology |
 | :--- | :--- |
-| **Frontend Framework** | React 19, TypeScript 5.8, Vite 8, React Router 7 |
-| **3D Rendering & Animation** | Three.js (r187), WebGL, PBR Shaders, Canvas Keyframing |
-| **Styling & Motion** | Tailwind CSS v4, Motion (Framer Motion) |
-| **State & Local Storage** | Custom Reactive Store, IndexedDB (`idb`), Encrypted `localStorage` |
-| **Multiplayer Server** | Node.js 22, Express 4, `ws` (WebSockets), `express-rate-limit` |
-| **Cloud & Serverless** | Cloudflare Pages, Cloudflare Workers, Cloudflare Durable Objects |
-| **Authentication & Database**| Supabase Auth, Supabase PostgreSQL, SQLite (`node:sqlite`), Turso |
-| **Mobile & Native** | Capacitor 8 (`@capacitor/android`), Java 21, Android Gradle Plugin 8.9.1 |
-| **Security & Quality** | GitHub CodeQL (0 alerts), ESLint, Vitest, TypeScript Strict Mode |
+| **Frontend Core** | React 19, TypeScript 5.8, Vite 8, React Router 7 |
+| **3D Engine & Graphics** | Three.js (r187), WebGL, PBR Shaders, GPU-accelerated Canvas textures |
+| **Styling & Animation** | Tailwind CSS v4, Motion (Framer Motion) |
+| **Persistence** | IndexedDB (`idb`), Encrypted `localStorage` fallback, `node:sqlite` |
+| **Multiplayer Server** | Node.js 22, Express 4, `ws` WebSockets, `express-rate-limit` |
+| **Edge Serverless** | Cloudflare Pages, Cloudflare Workers, Cloudflare Durable Objects |
+| **Cloud Auth & DB** | Supabase Auth, Supabase PostgreSQL with Row-Level Security (RLS) |
+| **Mobile Native** | Capacitor 8 (`@capacitor/android`), Java 21, AGP 8.9.1 |
+| **Quality & Security** | GitHub CodeQL (0 alerts), ESLint, Vitest, TypeScript Strict Mode |
 
 ---
 
-## 🚀 Quick Start (Local Development)
+## ⚡ Quick Start
 
-### Prerequisites
+### 1. Prerequisites
 - **Node.js**: `v20.x` or `v22.x` (LTS recommended)
 - **pnpm**: `v10.x` (recommended) or `npm` / `bun`
 
-### 1. Clone & Install
+### 2. Installation
 ```bash
 # Clone the repository
 git clone https://github.com/SudhirDevOps1/KingdomLudo.git
@@ -106,35 +172,24 @@ cd KingdomLudo
 
 # Install dependencies
 pnpm install
-```
 
-### 2. Configure Environment (Optional)
-```bash
-# Copy example environment configuration
-cp .env.example .env
-```
-*(By default, KingdomLudo runs locally out-of-the-box with embedded zero-config SQLite — no external database setup is required for local play!)*
-
-### 3. Run Development Server
-```bash
+# Start local development server
 pnpm dev
 ```
-Open your browser at **`http://localhost:3000`**.
+Open **`http://localhost:3000`** in your browser.
 
 ---
 
-## 🧪 Testing & Verification
-
-KingdomLudo has a comprehensive automated test suite covering game engine logic, bot AI, persistence, Supabase authentication, rate limiting, and 3D adapters:
+## 🧪 Testing & Production Commands
 
 ```bash
-# Run strict TypeScript check and ESLint
+# Typecheck & ESLint security audit
 pnpm run lint
 
-# Run Vitest test suite (8 test suites, 26 unit & integration tests)
+# Run Vitest unit & integration test suite (8 suites, 26 tests)
 pnpm test
 
-# Build production client bundle with PWA Service Worker
+# Build production client bundle & PWA Service Worker
 pnpm run build
 
 # Start production Node.js + WebSocket game server
@@ -143,21 +198,21 @@ pnpm start
 
 ---
 
-## 🔐 GitHub Secrets & Environment Variables
+## 🔐 GitHub Secrets & Environment Configuration
 
 When deploying through GitHub Actions or hosting on Cloudflare Pages and Supabase, configure your repository secrets and variables in:
 👉 **`GitHub Repo → Settings → Secrets and variables → Actions`**
 
 ### 🔑 Repository Secrets (Encrypted)
-| Secret Name | Required For | Description |
+| Secret Name | Required By | Description |
 | :--- | :--- | :--- |
-| `CLOUDFLARE_API_TOKEN` | Web & PWA Deployment | Cloudflare API Token with `Cloudflare Pages: Edit` permissions |
-| `VITE_SUPABASE_URL` | Cloud Accounts (Optional) | Your Supabase project URL (`https://xyz.supabase.co`) |
-| `VITE_SUPABASE_ANON_KEY` | Cloud Accounts (Optional) | Your Supabase anonymous public API key |
-| `ANDROID_KEYSTORE_BASE64` | Signed Android Release APK | Base64-encoded release `.jks` keystore |
-| `ANDROID_KEYSTORE_PASSWORD` | Signed Android Release APK | Password for the release keystore |
-| `ANDROID_KEY_ALIAS` | Signed Android Release APK | Key alias name inside the keystore |
-| `ANDROID_KEY_PASSWORD` | Signed Android Release APK | Password for the signing key alias |
+| `CLOUDFLARE_API_TOKEN` | `web-deploy.yml` | Cloudflare API Token with `Cloudflare Pages: Edit` permissions |
+| `VITE_SUPABASE_URL` | Client Vite | Your Supabase project URL (`https://xyz.supabase.co`) |
+| `VITE_SUPABASE_ANON_KEY` | Client Vite | Your Supabase anonymous public API key |
+| `ANDROID_KEYSTORE_BASE64` | `android-release.yml` | Base64-encoded release `.jks` keystore |
+| `ANDROID_KEYSTORE_PASSWORD` | `android-release.yml` | Password for the release keystore |
+| `ANDROID_KEY_ALIAS` | `android-release.yml` | Key alias name inside the keystore |
+| `ANDROID_KEY_PASSWORD` | `android-release.yml` | Password for the key alias |
 
 ### 🌐 Repository Variables (Plaintext)
 | Variable Name | Default Value | Description |
@@ -171,50 +226,39 @@ When deploying through GitHub Actions or hosting on Cloudflare Pages and Supabas
 
 ---
 
-## 📁 Repository Directory Structure
+## 🛡️ Security Audit & Hardening (CodeQL Certified)
+
+- **0 CodeQL Alerts**: Cleaned and hardened against CWE-770 (missing rate limiting) and CWE-312 (cleartext sensitive storage).
+- **Express Rate Limiting**: Global DoS throttling (`1000 req / 15m`) and API protections (`120 req / 1m`) active on all routes.
+- **Client Sanitization**: Personal Identifiable Information (PII) like emails are stripped before local fallback persistence, with XOR Base64 storage encryption.
+- **Authoritative Validation**: Dice rolls, token movements, and win conditions are calculated on the authoritative server or local engine, preventing client-side packet tampering.
+
+---
+
+## 📁 Repository Map
 
 ```text
 KingdomLudo/
-├── .github/
-│   └── workflows/                # Automated CI/CD Pipelines
-│       ├── ci.yml                # Lint, TypeScript, Vitest, Production Build
-│       ├── codeql.yml            # CodeQL Security Scanning (0 open alerts)
-│       ├── web-deploy.yml        # Cloudflare Pages Auto-Deploy
-│       ├── android-debug.yml     # Nightly Android Debug APK Compilation
-│       ├── android-release.yml   # Signed Production APK & AAB Generator
-│       └── release-please.yml    # Semantic Versioning & Release Automation
+├── .github/workflows/            # CI, CodeQL, Cloudflare Pages, Android Workflows
 ├── android/                      # Native Capacitor Android 15/16 Project (Java 21)
-├── docs/                         # In-Depth Architectural & Technical Guides
-│   ├── ARCHITECTURE.md           # Full System Architecture & Data Flow
+├── docs/                         # In-Depth Guides & Technical Architecture
+│   ├── assets/                   # High-res Cover Banners, Icons, & Kingdom Crests
+│   ├── ARCHITECTURE.md           # System Architecture & Topology Map
 │   ├── AUTHENTICATION.md         # Supabase Auth & Guest-First Spec
 │   ├── DATABASE_CONFIGURATION.md # Supabase PostgreSQL & SQLite Guide
-│   ├── GITHUB_SECRETS.md         # Step-by-Step GitHub Env & Secrets Tutorial
-│   └── ...                       # 35+ Comprehensive Project Docs
-├── server/                       # Authoritative Backend Game Server
-│   ├── backend/                  # Interchangeable Database Adapters (SQLite, PG, D1)
-│   ├── gameServer.ts             # Authoritative Room & Match Coordination
-│   └── rateLimiting.ts           # WebSocket & HTTP Rate Limiting Rules
+│   └── GITHUB_SECRETS.md         # Step-by-Step GitHub Setup Guide
+├── server/                       # Node.js + WebSocket Multiplayer Server
 ├── src/                          # React 19 Frontend Application
-│   ├── components/               # UI Modals, Audio, HUD, Fallback 2D Board
+│   ├── components/               # UI Modals, Audio, 4-Corner HUD, Fallback 2D Board
 │   ├── engine/                   # Ludo Core Rules, CSPRNG Dice, Bot AI Logic
 │   ├── persistence/              # Local IDB & Encrypted Storage Handlers
 │   ├── services/                 # Supabase Auth, Sound FX & Multiplayer Sync
 │   └── three/                    # 3D Board, Heroes, Ocean Shaders, Materials
-├── capacitor.config.ts           # Capacitor Native Mobile Configuration
 ├── package.json                  # Scripts & Dependency Manifest
 ├── server.ts                     # Standalone Express + WS Production Server
 ├── vite.config.ts                # Vite 8 + PWA + Workbox Configuration
 └── wrangler.jsonc                # Cloudflare Pages & Workers Config
 ```
-
----
-
-## 🛡️ Security & Reliability
-
-- **0 CodeQL Alerts**: Cleaned and hardened against CWE-770 (rate limiting) and CWE-312 (cleartext sensitive storage).
-- **Express Rate Limiting**: Global DoS throttling (`1000 req / 15m`) and API protections (`120 req / 1m`) active on all endpoints.
-- **Client Sanitization**: Personal Identifiable Information (PII) like emails are stripped before local fallback persistence, with XOR Base64 storage encryption.
-- **Authoritative Validation**: Dice rolls, token movements, and win conditions are calculated on the authoritative server or local engine, preventing client-side packet tampering.
 
 ---
 
@@ -224,6 +268,6 @@ Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for more infor
 
 ---
 
-<p align="center">
-  Built with 👑 by <a href="https://github.com/SudhirDevOps1">SudhirDevOps1</a> and the KingdomLudo Team.
-</p>
+<div align="center">
+  <p>Crafted with 👑 and passion by <a href="https://github.com/SudhirDevOps1"><b>SudhirDevOps1</b></a> & the KingdomLudo Team.</p>
+</div>
