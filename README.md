@@ -282,18 +282,39 @@ Open **`http://localhost:3000`** in your browser.
 ## 🧪 Testing & Production Commands
 
 ```bash
-# Typecheck & ESLint security audit
+# Typecheck & ESLint audit
 pnpm run lint
 
 # Run Vitest unit & integration test suite (8 suites, 26 tests)
 pnpm test
 
-# Build production client bundle & PWA Service Worker
+# Run Playwright End-to-End browser test suite
+pnpm run test:e2e
+
+# Build production client bundle & PWA Service Worker (auto-syncs version)
 pnpm run build
 
 # Start production Node.js + WebSocket game server
 pnpm start
 ```
+
+---
+
+## 🎯 Unified Single Source of Truth (SSOT) Versioning
+
+KingdomLudo features a unified versioning engine that keeps the web client, native Android Gradle, documentation, manifests, and error boundaries in 100% sync from a single command:
+
+```bash
+# Synchronize all project files with current package.json version
+pnpm run version:sync
+
+# Bump version automatically (patch | minor | major | alpha | beta | rc)
+pnpm run version:bump patch
+
+# Set an exact custom version across all files in one shot
+pnpm run version:set 0.2.0-beta.0
+```
+*See [Release Automation & SSOT Guide](docs/RELEASE_AUTOMATION.md) for architecture details.*
 
 ---
 

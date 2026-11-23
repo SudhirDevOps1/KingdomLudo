@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { openDB, type IDBPDatabase } from 'idb';
+import { APP_CONFIG } from '../config/appConfig';
 import type { SupportedLanguage } from '../data/i18n';
 import type { KingdomColor, MatchState } from '../engine/types';
 import type { GraphicsQuality } from '../three/boardScene';
@@ -255,7 +256,7 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
 
     const backup: BackupDataPayload = {
       format: 'kingdomludo_backup',
-      version: '0.1.0-alpha.0',
+      version: APP_CONFIG.version,
       exportedAt: Date.now(),
       profile: sanitizedProfile as StoredProfile | null,
       settings,

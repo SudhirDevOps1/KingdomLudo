@@ -5,6 +5,12 @@ import crestBlue from '@/src/assets/images/crest_blue_kingdom_1795356726471.jpg'
 import crestGreen from '@/src/assets/images/crest_green_kingdom_1795356726368.jpg';
 import crestYellow from '@/src/assets/images/crest_yellow_kingdom_1795356726466.jpg';
 import type { KingdomColor } from '../engine/types';
+import {
+  APP_VERSION,
+  APP_RELEASE_CHANNEL,
+  APP_RELEASE_TAG,
+  ANDROID_VERSION_CODE,
+} from './version';
 
 export interface AppFeatureFlags {
   enableOnlineMultiplayer: boolean;
@@ -29,11 +35,11 @@ export const APP_CONFIG = {
   appName: import.meta.env.VITE_APP_NAME || 'KingdomLudo',
   shortName: 'KingdomLudo',
   packageId: import.meta.env.VITE_APP_PACKAGE_ID || 'com.kingdomludo.app',
-  version: '0.1.0-alpha.0',
-  releaseChannel: 'Alpha',
-  releaseTag: 'v0.1.0-alpha.0',
+  version: APP_VERSION,
+  releaseChannel: APP_RELEASE_CHANNEL,
+  releaseTag: APP_RELEASE_TAG,
   stabilityNotice: 'Early development alpha — core 2D/3D gameplay, AI, offline saves, and live WebSocket rooms are playable; native Android binaries build in CI.',
-  androidVersionCode: 100,
+  androidVersionCode: ANDROID_VERSION_CODE,
   defaultThemeId: 'royal-enchanted-courtyard',
   defaultLanguage: 'en' as const,
   colors: {

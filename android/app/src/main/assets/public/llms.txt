@@ -1,0 +1,26 @@
+# KingdomLudo 3D
+
+> KingdomLudo is an AAA-quality, 3D tabletop fantasy island Ludo game built with React 19, Three.js, TypeScript, Supabase, Cloudflare Workers/Pages, and Capacitor 8 Android Native.
+
+## Core Features
+- **3D Tabletop Engine**: Exact 15x15 board topology with 52-cell outer ring, 8 star sanctuaries (safe zones), 4 colored home runways, and central Royal Crown victory sanctuary.
+- **12 Articulated Heroes**: 4 Kingdoms (Crimson Spire, Cobalt Bastion, Emerald Grove, Sovereign Sun) each with 3 hero classes (Leader, Ranger/Assassin, Tank/Guardian) and 14 procedural/skeletal animation states (Idle, Walk, Run, Jump, Land, Anticipate, Celebrate, Capture, Victory).
+- **Multiplayer Architecture**: Built-in Express + WebSocket authoritative multiplayer server featuring cryptographically secure dice rolls (CSPRNG via Node `crypto.randomInt`), 6-character private invite codes, anti-cheat validation, and reconnect recovery.
+- **Guest-First & Supabase**: Zero-friction instant guest play backed by cryptographic tokens (`gst_...`) and IndexedDB persistence, with optional Supabase Auth and PostgreSQL cloud synchronization.
+- **Environments & Visual Themes**: 6 selectable atmospheres including Royal Enchanted Courtyard, Celestial Sky Citadel, Twilight Arcane Sanctuary, Verdant Jungle Canopy, Artisan Wood & Brass, and Glacial Citadel.
+- **Cross-Platform**: Web (PWA with offline caching via Workbox) and Native Android 15/16 (Capacitor 8, Java 21, AGP 8.9.1).
+- **Accessibility**: Instant hardware-accelerated 2D SVG fallback board mode for low-power or non-WebGL devices.
+
+## API & Endpoints
+- `GET /api/health`: Health status of database provider and server uptime.
+- `GET /api/config/capabilities`: Returns supported features (auth, persistence, storage provider) without leaking secrets.
+- `GET /api/rooms/:code`: Summary of active multiplayer room status and seated players.
+- `GET /api/server-stats`: Public statistics of active rooms and connected WebSocket clients.
+- `WS /ws`: Realtime authoritative WebSocket connection for room creation, matchmaking, dice rolls, and turn synchronization.
+
+## Technology Stack
+- **Frontend**: React 19, TypeScript 5.8, Three.js r187, Tailwind CSS v4, Motion (Framer Motion), Vite 8.
+- **Backend & Cloud**: Node.js 22, Express 4, `ws`, `express-rate-limit`, Supabase Auth & PostgreSQL, Cloudflare Pages, Cloudflare Workers & Durable Objects.
+- **Mobile**: Capacitor 8 (`@capacitor/android`), Java 21.
+- **Security**: GitHub CodeQL (0 open alerts, CWE-770 and CWE-312 hardened).
+- **Source Code**: https://github.com/SudhirDevOps1/KingdomLudo

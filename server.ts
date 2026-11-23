@@ -6,6 +6,7 @@ import path from 'path';
 import { WebSocketServer } from 'ws';
 import { createConfiguredDatabaseProvider, PROVIDER_MATRIX } from './server/backend/providerFactory';
 import { AuthoritativeGameServer } from './server/gameServer';
+import { APP_VERSION } from './src/config/version';
 
 export async function createAppServer(options?: { attachVite?: boolean; port?: number }) {
   const app = express();
@@ -143,7 +144,7 @@ if (isMain) {
   createAppServer()
     .then(({ server }) => {
       server.listen(port, '0.0.0.0', () => {
-        console.log(`\n👑 KingdomLudo v0.1.0-alpha.0 server is ready!`);
+        console.log(`\n👑 KingdomLudo v${APP_VERSION} server is ready!`);
         console.log(`  ➜ Local:   http://localhost:${port}/`);
         console.log(`  ➜ Network: http://127.0.0.1:${port}/\n`);
       });

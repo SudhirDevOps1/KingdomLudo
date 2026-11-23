@@ -1,4 +1,28 @@
 apply plugin: 'com.android.application'
+import groovy.json.JsonSlurper
+
+def getAppVersion() {
+    try {
+        def packageJsonFile = file('../../package.json')
+        if (packageJsonFile.exists()) {
+            def parsed = new JsonSlurper().parseText(packageJsonFile.text)
+            return parsed.version ?: "0.1.0-alpha.0"
+        }
+    } catch (Exception ignored) {}
+    return "0.1.0-alpha.0"
+}
+
+def getAppVersionCode() {
+    def versionStr = getAppVersion()
+    def matcher = (versionStr =~ /^(\d+)\.(\d+)\.(\d+)/)
+    if (matcher.find()) {
+        def major = matcher.group(1).toInteger()
+        def minor = matcher.group(2).toInteger()
+        def patch = matcher.group(3).toInteger()
+        return (major * 10000) + (minor * 100) + patch
+    }
+    return 100
+}
 
 android {
     namespace "com.kingdomludo.app"
@@ -8,8 +32,8 @@ android {
         applicationId "com.kingdomludo.app"
         minSdk 24
         targetSdk 36
-        versionCode System.getenv("ANDROID_VERSION_CODE")?.toInteger() ?: 100
-        versionName System.getenv("ANDROID_VERSION_NAME") ?: "0.1.0-alpha.0"
+        versionCode System.getenv("ANDROID_VERSION_CODE")?.toInteger() ?: getAppVersionCode()
+        versionName System.getenv("ANDROID_VERSION_NAME") ?: getAppVersion()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 

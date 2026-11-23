@@ -2,5 +2,7 @@
   "name": "KingdomLudo",
   "description": "KingdomLudo (v0.1.0-alpha.0) — A 3D fantasy island tabletop Ludo game featuring 12 animated heroes, deterministic rules, strategic AI, offline-first persistence, Firebase auth, and live WebSocket multiplayer.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

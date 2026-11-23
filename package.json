@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "tsx server.ts",
     "start": "NODE_ENV=production tsx server.ts",
-    "build": "vite build",
+    "build": "tsx scripts/sync-version.ts sync && vite build",
+    "version:sync": "tsx scripts/sync-version.ts sync",
+    "version:bump": "tsx scripts/sync-version.ts bump",
+    "version:set": "tsx scripts/sync-version.ts set",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit && eslint .",

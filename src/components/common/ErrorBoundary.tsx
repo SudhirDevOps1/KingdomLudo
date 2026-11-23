@@ -1,4 +1,5 @@
 import React from 'react';
+import { APP_CONFIG } from '../../config/appConfig';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -30,7 +31,7 @@ export class ErrorBoundary extends React.Component<
               KingdomLudo Interrupted
             </h1>
             <p className="mt-2 font-mono-num text-xs text-[#E7E2D8]/60">
-              v0.1.0-alpha.0 · Alpha
+              {APP_CONFIG.releaseTag} · {APP_CONFIG.releaseChannel}
             </p>
             <p className="mt-3 text-sm leading-relaxed text-[#E7E2D8]/80">
               {this.state.message}
