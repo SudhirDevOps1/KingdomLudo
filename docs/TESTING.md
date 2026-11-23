@@ -8,5 +8,5 @@
 - `tests/ui.test.tsx`: React Testing Library checks for `HomeHub` and `Board2DFallback` interactive callbacks.
 
 ## Static Analysis & Security
-- `npm run lint`: Executes `tsc --noEmit` + `eslint .` (including `@firebase/eslint-plugin-security-rules` on `firestore.rules`).
+- `npm run lint`: Executes `tsc --noEmit` + `eslint .` (TypeScript strict mode + ESLint security rules).
 - `npm run build`: Compiles production bundle (`dist/`) + PWA Workbox Service Worker.

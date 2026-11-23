@@ -4,7 +4,7 @@ Only minimal permissions strictly necessary for multiplayer connectivity, tactil
 
 | Permission | Purpose |
 | :--- | :--- |
-| `android.permission.INTERNET` | Optional online multiplayer WebSockets and Firebase sync |
+| `android.permission.INTERNET` | Optional online multiplayer WebSockets and Supabase cloud sync |
 | `android.permission.ACCESS_NETWORK_STATE` | Detect offline vs online transitions cleanly |
 | `android.permission.VIBRATE` | Haptic feedback on dice rolls and captures (`@capacitor/haptics`) |
 | `android.permission.POST_NOTIFICATIONS` | Optional turn/room notifications on Android 13+ |

@@ -12,7 +12,7 @@ Every row below reflects features verified in this repository—no planned-only 
 | 2D SVG Board Fallback + Software WebGL Guard | Implemented | `src/components/game/Board2DFallback.tsx` |
 | Web Audio Procedural Sound Synthesizer | Implemented | `src/audio/soundEngine.ts` |
 | Offline IndexedDB Save/Resume & Match History | Implemented | `src/persistence/localPersistence.ts` |
-| Instant Guest Mode + Optional Firebase Google Auth | Implemented | `src/services/firebase/firebaseClient.ts` |
+| Instant Guest Mode + Optional Supabase Auth | Implemented | `src/services/auth/authService.ts` |
 | Express + WebSocket Authoritative Multiplayer | Implemented | `server.ts`, `server/gameServer.ts` |
 | 5-Provider Database Adapter Abstraction | Implemented | `server/backend/adapters/*`, `providerFactory.ts` |
 | PWA Manifest, Service Worker & Install Button | Implemented | `vite.config.ts`, `src/components/pwa/*` |

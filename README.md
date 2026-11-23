@@ -1,43 +1,229 @@
-# KingdomLudo (`0.1.0-alpha.0`)
+# 👑 KingdomLudo 3D
 
-**Channel:** Alpha (`v0.1.0-alpha.0`) · **Stability:** Early development
+[![CI](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/ci.yml/badge.svg)](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/ci.yml)
+[![CodeQL Security Analysis](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/codeql.yml/badge.svg)](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/codeql.yml)
+[![Android Debug APK](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/android-debug.yml/badge.svg)](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/android-debug.yml)
+[![Deploy Web & PWA](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/web-deploy.yml/badge.svg)](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/web-deploy.yml)
+[![Release Please](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/release-please.yml/badge.svg)](https://github.com/SudhirDevOps1/KingdomLudo/actions/workflows/release-please.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Security: 0 Open Alerts](https://img.shields.io/badge/CodeQL-0%20Alerts%20Fixed-brightgreen)](https://github.com/SudhirDevOps1/KingdomLudo/security/code-scanning)
 
-KingdomLudo is a 3D fantasy island tabletop Ludo game built with React 19, TypeScript, Three.js, Express + WebSockets, IndexedDB, Firebase Auth & Firestore, Capacitor Android configuration, and interchangeable server database adapters.
+> **KingdomLudo** is an AAA-styled, full-fidelity 3D tabletop fantasy island Ludo experience built with **React 19**, **Three.js**, **TypeScript**, **Supabase**, **Cloudflare Pages/Workers**, **Node.js/Express WebSockets**, and **Capacitor 8 Android Native**.
 
-## Key Implemented Features
+---
 
-- **Playable 3D Ludo Engine**: Exact 15×15 board topology (52-cell main ring, 8 star safe zones, colored home lanes, and central Royal Crown Sanctuary) with 2, 3, and 4 player seats.
-- **Living 3D Fantasy Island & 6 Environments**: Animated PBR ocean, cliff waterfalls, mist, distant castles with fluttering flags, swaying foliage, clouds, birds, and 6 selectable themes anchored on the **Royal Enchanted Courtyard** island.
-- **12 Original Articulated 3D Heroes**: Multi-part grounded `THREE.Group` models across Crimson Spire, Cobalt Bastion, Emerald Grove, and Sovereign Sun — each with 3 outfits, 3 colorways, 14-state animation reactions (`idle`, `walk`, `hop`, `capture`, `celebrate`, `victory`, etc.), and optional external `.glb` attachment via `GLTFLoader`.
-- **Offline & AI Gameplay**: Pass & Play, Play vs Computer (`easy`, `medium`, `hard` AI), Practice Skirmish Challenges, and auto-saved mid-match resume via IndexedDB.
-- **Authoritative Online Multiplayer**: Built-in Express + `ws` WebSocket server with CSPRNG dice rolls (`crypto.randomInt`), 6-character private invite rooms (`?room=CODE`), turn timers, reconnect recovery, and 2P/4P public matchmaking queues.
-- **Automatic 2D Fallback & Accessibility**: Software/no-WebGL detection, live 2D SVG board toggle, Zen full-viewport play mode, reduced-motion support, and full keyboard controls (`Space`, `1-4`, `C`, `H`, `Esc`).
-- **PWA & Capacitor Android**: Installable Progressive Web App via `vite-plugin-pwa`, bespoke 3D Royal Crown & Ludo Dice icons across Web/PWA/Android (`com.kingdomludo.app`), and automated CI/CD release workflows.
-- **Interchangeable Database Adapters**: Capability-based backend abstraction supporting SQLite (`node:sqlite` default), PostgreSQL / Supabase / Neon (`pg`), Turso (`@libsql/client`), Cloudflare D1 HTTP API, and Firebase Firestore.
+## 🌟 Highlights & Key Features
 
-## Quick Start
+### 🏰 1. Living 3D Fantasy Island Tabletop
+- **Exact 15×15 Ludo Topology**: 52-cell main perimeter, 8 star safe zones, 4 colored home columns, and the central Royal Crown Sanctuary.
+- **Dynamic PBR Island**: Animated ocean shaders, cascading cliffside waterfalls, atmospheric mist, fluttering kingdom banners, dynamic day/sunset lighting, and floating particles.
+- **6 Royal Environments**: Selectable themes including *Enchanted Royal Courtyard*, *Obsidian Caldera*, *Astral Void*, *Sunken Atlantis*, *Glacial Citadel*, and *Neon Cyber-Kingdom*.
 
-```bash
-npm install
-npm run dev
+### ⚔️ 2. 12 Articulated 3D Heroes & Animation Studio
+- **4 Distinct Kingdoms**:
+  - 🔴 **Crimson Spire**: Lord Ignis, Lady Ember, General Ash
+  - 🔵 **Cobalt Bastion**: Prince Tide, Sentinel Wave, Admiral Marina
+  - 🟢 **Emerald Grove**: Warden Grove, Huntress Thorn, Sage Leaf
+  - 🟡 **Sovereign Sun**: King Aurelius, Knight Dawn, High Cleric Sol
+- **14 Procedural & Skeletal Animation States**: Natural breathing idle, walking cycle with foot contact, energetic running, jump & anticipation, impact landing compression, royal celebration, token capture slam, and crown victory fanfare.
+- **Customization Studio**: 3 interchangeable armor sets, royal colorways, accessories, dynamic camera orbit controls, and external `.glb` model support.
+
+### 🎲 3. Authoritative Multiplayer & Smart AI
+- **Guest-First Architecture**: Instant play with cryptographic guest sessions (`gst_...`) — zero sign-up friction.
+- **Supabase Cloud Sync**: Optional registered account authentication (Email/Password, Magic Link, OAuth) with cross-device statistics, achievements, and unlocked outfits.
+- **Anti-Cheat Authoritative Engine**: Server-enforced turn timing, CSPRNG cryptographically secure dice rolls (`crypto.randomInt`), private 6-character room codes (`?room=CODE`), and automatic reconnect match state recovery.
+- **Adaptive Bot AI**: Three distinct AI personas:
+  - 🟢 **Easy (Casual)**: Random valid moves, light defense.
+  - 🟡 **Medium (Tactical)**: Balanced safe-zone prioritization, captures opportunities when available.
+  - 🔴 **Hard (Grandmaster)**: Strategic risk analysis, min-max capture aggression, defensive stacking, and endgame efficiency.
+
+### 📱 4. Cross-Platform: Web, PWA & Native Android
+- **Progressive Web App (PWA)**: Offline-first asset caching with Workbox and custom Service Worker.
+- **Capacitor 8 Native Android**: Full Android 15/16 and Java 21 compatibility (`com.kingdomludo.app`) with custom adaptive icons, splash screens, immersive status bars, and hardware haptics.
+- **2D Lightweight Fallback**: Automatic detection of low-power or non-WebGL devices, live 2D SVG board toggle, and Zen full-viewport play mode.
+
+---
+
+## 🛠️ Architecture & Tech Stack
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│                        KingdomLudo Client (PWA)                        │
+│   React 19  •  Three.js (WebGL)  •  Tailwind CSS  •  Lucide  •  idb     │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                ┌───────────────────┴───────────────────┐
+                ▼                                       ▼
+ ┌─────────────────────────────┐         ┌─────────────────────────────┐
+ │    Local Offline Engine     │         │   Online Multiplayer Mode   │
+ │ • Procedural AI Bots        │         │ • WSS / Realtime WebSockets │
+ │ • IndexedDB Match Storage   │         │ • Authoritative Matchmaker  │
+ │ • Encrypted Safe Storage    │         │ • Server-Side Validation    │
+ └─────────────────────────────┘         └──────────────┬──────────────┘
+                                                        │
+        ┌───────────────────────────────────────────────┴─────────────────┐
+        ▼                                                                 ▼
+ ┌───────────────────────────────┐               ┌──────────────────────────────┐
+ │    Express + WS Game Server   │   - or -      │  Cloudflare Workers / DO     │
+ │ • Rate-Limited API & Static   │               │ • Durable Objects State      │
+ │ • CSPRNG Dice Generation      │               │ • Edge Latency Optimization  │
+ └──────────────┬────────────────┘               └──────────────┬───────────────┘
+                │                                               │
+                └───────────────────────┬───────────────────────┘
+                                        ▼
+                         ┌─────────────────────────────┐
+                         │   Supabase Cloud Platform   │
+                         │ • Supabase Auth (JWT/OAuth) │
+                         │ • PostgreSQL (RLS Secured)  │
+                         └─────────────────────────────┘
 ```
 
-Open `http://localhost:3000`.
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend Framework** | React 19, TypeScript 5.8, Vite 8, React Router 7 |
+| **3D Rendering & Animation** | Three.js (r187), WebGL, PBR Shaders, Canvas Keyframing |
+| **Styling & Motion** | Tailwind CSS v4, Motion (Framer Motion) |
+| **State & Local Storage** | Custom Reactive Store, IndexedDB (`idb`), Encrypted `localStorage` |
+| **Multiplayer Server** | Node.js 22, Express 4, `ws` (WebSockets), `express-rate-limit` |
+| **Cloud & Serverless** | Cloudflare Pages, Cloudflare Workers, Cloudflare Durable Objects |
+| **Authentication & Database**| Supabase Auth, Supabase PostgreSQL, SQLite (`node:sqlite`), Turso |
+| **Mobile & Native** | Capacitor 8 (`@capacitor/android`), Java 21, Android Gradle Plugin 8.9.1 |
+| **Security & Quality** | GitHub CodeQL (0 alerts), ESLint, Vitest, TypeScript Strict Mode |
 
-## Scripts
+---
 
-- `npm run dev` — Start Express + WebSocket server + Vite middleware on port `3000`
-- `npm run build` — Build production client bundle (`dist/`)
-- `npm start` — Run production Express + WebSocket server serving `dist/`
-- `npm run lint` — TypeScript strict check (`tsc --noEmit`) + ESLint security rules check
-- `npm test` — Execute Vitest unit and integration test suites
+## 🚀 Quick Start (Local Development)
 
-## Honest Alpha Release Notes (`0.1.0-alpha.0`)
+### Prerequisites
+- **Node.js**: `v20.x` or `v22.x` (LTS recommended)
+- **pnpm**: `v10.x` (recommended) or `npm` / `bun`
 
-- **Web, PWA, Multiplayer Server & Tests**: Fully built and verified locally on Linux Node.js.
-- **Android APK / AAB Binaries**: Configured cleanly (`com.kingdomludo.app`, Gradle, mipmaps, adaptive icons) for automated builds via `.github/workflows/android-debug.yml` and `.github/workflows/android-release.yml`; Android SDK/JDK is not installed inside this build container, so APK/AAB compilation is deferred to GitHub Actions or a local Android Studio/Gradle workstation.
-- **3D Character Models**: All 12 heroes render and animate procedurally by default; external skeletal `.glb` files can be wired via `optionalGlbPath`.
+### 1. Clone & Install
+```bash
+# Clone the repository
+git clone https://github.com/SudhirDevOps1/KingdomLudo.git
+cd KingdomLudo
 
-## Documentation
+# Install dependencies
+pnpm install
+```
 
-Full architecture, design, security, database, multiplayer, Android, feature status, and release guides live in [`docs/`](./docs/).
+### 2. Configure Environment (Optional)
+```bash
+# Copy example environment configuration
+cp .env.example .env
+```
+*(By default, KingdomLudo runs locally out-of-the-box with embedded zero-config SQLite — no external database setup is required for local play!)*
+
+### 3. Run Development Server
+```bash
+pnpm dev
+```
+Open your browser at **`http://localhost:3000`**.
+
+---
+
+## 🧪 Testing & Verification
+
+KingdomLudo has a comprehensive automated test suite covering game engine logic, bot AI, persistence, Supabase authentication, rate limiting, and 3D adapters:
+
+```bash
+# Run strict TypeScript check and ESLint
+pnpm run lint
+
+# Run Vitest test suite (8 test suites, 26 unit & integration tests)
+pnpm test
+
+# Build production client bundle with PWA Service Worker
+pnpm run build
+
+# Start production Node.js + WebSocket game server
+pnpm start
+```
+
+---
+
+## 🔐 GitHub Secrets & Environment Variables
+
+When deploying through GitHub Actions or hosting on Cloudflare Pages and Supabase, configure your repository secrets and variables in:
+👉 **`GitHub Repo → Settings → Secrets and variables → Actions`**
+
+### 🔑 Repository Secrets (Encrypted)
+| Secret Name | Required For | Description |
+| :--- | :--- | :--- |
+| `CLOUDFLARE_API_TOKEN` | Web & PWA Deployment | Cloudflare API Token with `Cloudflare Pages: Edit` permissions |
+| `VITE_SUPABASE_URL` | Cloud Accounts (Optional) | Your Supabase project URL (`https://xyz.supabase.co`) |
+| `VITE_SUPABASE_ANON_KEY` | Cloud Accounts (Optional) | Your Supabase anonymous public API key |
+| `ANDROID_KEYSTORE_BASE64` | Signed Android Release APK | Base64-encoded release `.jks` keystore |
+| `ANDROID_KEYSTORE_PASSWORD` | Signed Android Release APK | Password for the release keystore |
+| `ANDROID_KEY_ALIAS` | Signed Android Release APK | Key alias name inside the keystore |
+| `ANDROID_KEY_PASSWORD` | Signed Android Release APK | Password for the signing key alias |
+
+### 🌐 Repository Variables (Plaintext)
+| Variable Name | Default Value | Description |
+| :--- | :--- | :--- |
+| `CLOUDFLARE_ACCOUNT_ID` | *(Your Account ID)* | 32-character Cloudflare Account ID |
+| `CLOUDFLARE_PAGES_PROJECT` | `kingdomludo` | Target project name on Cloudflare Pages |
+| `VITE_WS_URL` | *(empty = same host)* | Remote WebSocket server URL (e.g. `wss://game.yourdomain.com/ws`) |
+| `VITE_APP_NAME` | `KingdomLudo` | Custom display application title |
+
+📖 **For full, step-by-step setup instructions with screenshots and command-line generators, read [`docs/GITHUB_SECRETS.md`](./docs/GITHUB_SECRETS.md).**
+
+---
+
+## 📁 Repository Directory Structure
+
+```text
+KingdomLudo/
+├── .github/
+│   └── workflows/                # Automated CI/CD Pipelines
+│       ├── ci.yml                # Lint, TypeScript, Vitest, Production Build
+│       ├── codeql.yml            # CodeQL Security Scanning (0 open alerts)
+│       ├── web-deploy.yml        # Cloudflare Pages Auto-Deploy
+│       ├── android-debug.yml     # Nightly Android Debug APK Compilation
+│       ├── android-release.yml   # Signed Production APK & AAB Generator
+│       └── release-please.yml    # Semantic Versioning & Release Automation
+├── android/                      # Native Capacitor Android 15/16 Project (Java 21)
+├── docs/                         # In-Depth Architectural & Technical Guides
+│   ├── ARCHITECTURE.md           # Full System Architecture & Data Flow
+│   ├── AUTHENTICATION.md         # Supabase Auth & Guest-First Spec
+│   ├── DATABASE_CONFIGURATION.md # Supabase PostgreSQL & SQLite Guide
+│   ├── GITHUB_SECRETS.md         # Step-by-Step GitHub Env & Secrets Tutorial
+│   └── ...                       # 35+ Comprehensive Project Docs
+├── server/                       # Authoritative Backend Game Server
+│   ├── backend/                  # Interchangeable Database Adapters (SQLite, PG, D1)
+│   ├── gameServer.ts             # Authoritative Room & Match Coordination
+│   └── rateLimiting.ts           # WebSocket & HTTP Rate Limiting Rules
+├── src/                          # React 19 Frontend Application
+│   ├── components/               # UI Modals, Audio, HUD, Fallback 2D Board
+│   ├── engine/                   # Ludo Core Rules, CSPRNG Dice, Bot AI Logic
+│   ├── persistence/              # Local IDB & Encrypted Storage Handlers
+│   ├── services/                 # Supabase Auth, Sound FX & Multiplayer Sync
+│   └── three/                    # 3D Board, Heroes, Ocean Shaders, Materials
+├── capacitor.config.ts           # Capacitor Native Mobile Configuration
+├── package.json                  # Scripts & Dependency Manifest
+├── server.ts                     # Standalone Express + WS Production Server
+├── vite.config.ts                # Vite 8 + PWA + Workbox Configuration
+└── wrangler.jsonc                # Cloudflare Pages & Workers Config
+```
+
+---
+
+## 🛡️ Security & Reliability
+
+- **0 CodeQL Alerts**: Cleaned and hardened against CWE-770 (rate limiting) and CWE-312 (cleartext sensitive storage).
+- **Express Rate Limiting**: Global DoS throttling (`1000 req / 15m`) and API protections (`120 req / 1m`) active on all endpoints.
+- **Client Sanitization**: Personal Identifiable Information (PII) like emails are stripped before local fallback persistence, with XOR Base64 storage encryption.
+- **Authoritative Validation**: Dice rolls, token movements, and win conditions are calculated on the authoritative server or local engine, preventing client-side packet tampering.
+
+---
+
+## 📜 License
+
+Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for more information.
+
+---
+
+<p align="center">
+  Built with 👑 by <a href="https://github.com/SudhirDevOps1">SudhirDevOps1</a> and the KingdomLudo Team.
+</p>

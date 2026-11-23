@@ -11,6 +11,6 @@
 | Multiplayer | `multiplayer` | `MultiplayerView` | Create 6-char room, copy invite URL, join by code, Ready/Start, 2P/4P public queue |
 | Active Game | `play` | `ActiveGameView` | Full-bleed 3D `LudoBoardViewport` or `Board2DFallback`, HUD dock, camera controls, pause, victory |
 | Chronicle | `chronicle` | `ChronicleView` | Tabs for Match History, Statistics, Achievements, and Hero Collection |
-| Profile | `profile` | `ProfileView` | Guest profile editing + optional Firebase Google Sign-In, Sign Out, Delete Account |
+| Profile | `profile` | `ProfileView` | Guest profile editing + optional Supabase Sign-In, Sign Out, Delete Account |
 | Settings | `settings` | `SettingsView` | General, Audio/Haptics, 3D Graphics Quality, Language (5 locales), Privacy, DB Config |
 | Help & Rules | `help` | `HelpAndAboutView` | Official Ludo rules, keyboard controls, and asset license credits |

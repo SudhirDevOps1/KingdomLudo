@@ -20,7 +20,7 @@
 |  - Local Offline Persistence (src/persistence/localPersistence.ts)                    |
 |    * Embedded SQLite on Android (Capacitor Community SQLite) & Browser IndexedDB      |
 |    * Full backup export (exportBackupJSON) & restore (restoreBackupJSON)              |
-|  - Cloud Synchronization (Optional Firebase Google Auth & Firestore Sync)             |
+|  - Cloud Synchronization (Optional Supabase Auth & PostgreSQL Sync)                   |
 +-------------------------------------------+-------------------------------------------+
                                             | HTTPS / WebSocket (/ws, /api/*)
 +-------------------------------------------v-------------------------------------------+
@@ -32,7 +32,7 @@
                                             |
                     +-----------------------+-----------------------+
                     v                       v                       v
-      [SQLite (node:sqlite / OPFS)]   [Postgres / Supabase]   [Turso / D1 / Firebase]
+      [SQLite (node:sqlite / OPFS)]   [Postgres / Supabase]   [Turso / Cloudflare D1]
       25-table normalized schema      Multi-region SQL        Serverless DB / Cloud Sync
       (003_full_normalized_schema.sql)
 ```
