@@ -2,11 +2,22 @@ name: Android Release APK & AAB
 
 on:
   release:
-    types: [published]
+    types: [published, prereleased]
   push:
     tags:
       - 'v*'
+      - 'kingdomludo-v*'
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag to build & attach APK/AAB (e.g. kingdomludo-v0.1.0-alpha.1)'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -16,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag_name || github.ref }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -57,7 +70,7 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_VERSION_CODE: ${{ github.run_number }}
-          ANDROID_VERSION_NAME: ${{ github.ref_name }}
+          ANDROID_VERSION_NAME: ${{ inputs.tag_name || github.ref_name }}
         run: |
           if [ -f ./gradlew ]; then
             chmod +x ./gradlew
@@ -92,11 +105,12 @@ jobs:
           fi
 
       - name: Attach Artifacts to GitHub Release
-        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/v')
+        if: inputs.tag_name != '' || github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
           files: release-artifacts/*
-          prerelease: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
+          prerelease: ${{ contains(inputs.tag_name || github.ref_name, '-alpha') || contains(inputs.tag_name || github.ref_name, '-beta') || contains(inputs.tag_name || github.ref_name, '-rc') }}
 
       - name: Secure Clean Up Keystore
         if: always()
