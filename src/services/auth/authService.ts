@@ -6,7 +6,10 @@ export interface GuestSession {
   guestToken: string;
   displayName: string;
   createdAt: number;
+  expiresAt?: number;
 }
+
+const GUEST_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const GUEST_STORAGE_KEY = 'kingdomludo_guest_session';
 
@@ -52,7 +55,8 @@ export function getOrCreateGuestSession(): GuestSession {
     const stored = localStorage.getItem(GUEST_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored) as GuestSession;
-      if (parsed.guestId && parsed.guestToken) {
+      const isExpired = parsed.expiresAt ? Date.now() > parsed.expiresAt : false;
+      if (parsed.guestId && parsed.guestToken && !isExpired) {
         return parsed;
       }
     }
@@ -60,11 +64,13 @@ export function getOrCreateGuestSession(): GuestSession {
     // ignore parse error and recreate
   }
 
+  const now = Date.now();
   const fresh: GuestSession = {
     guestId: `gst_${generateCryptoToken(12)}`,
     guestToken: generateCryptoToken(24),
     displayName: generateGuestDisplayName(),
-    createdAt: Date.now(),
+    createdAt: now,
+    expiresAt: now + GUEST_TTL_MS,
   };
 
   try {

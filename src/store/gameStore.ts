@@ -424,7 +424,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   return {
     initialized: false,
-    screen: 'splash',
+    screen: 'home',
     chronicleTab: 'history',
     settingsTab: 'general',
     legalTab: 'terms',

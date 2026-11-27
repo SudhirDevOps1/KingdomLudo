@@ -16,9 +16,12 @@ export interface StoredMatchHistoryItem {
   sixesRolled: number;
   durationMs: number;
   completedAt: number;
+  expiresAt?: number;
   humanWon: boolean;
   hardAiBeaten: boolean;
 }
+
+const RETENTION_30_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 export interface StoredProfile {
   profileId: string;
@@ -187,22 +190,33 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
 
   public async saveMatchHistory(item: StoredMatchHistoryItem): Promise<void> {
     await this.init();
+    const withTtl: StoredMatchHistoryItem = {
+      ...item,
+      expiresAt: item.expiresAt ?? Date.now() + RETENTION_30_DAYS_MS,
+    };
     if (!this.db) {
       const existing = this.lsGet<StoredMatchHistoryItem[]>('ck_history') ?? [];
-      const next = [item, ...existing.filter((x) => x.matchId !== item.matchId)].slice(0, 50);
+      const now = Date.now();
+      const validExisting = existing.filter((x) => x.matchId !== withTtl.matchId && (!x.expiresAt || x.expiresAt > now));
+      const next = [withTtl, ...validExisting].slice(0, 50);
       this.lsSet('ck_history', next);
       return;
     }
-    await this.db.put('match_history', item);
+    await this.db.put('match_history', withTtl);
   }
 
   public async listMatchHistory(limit = 30): Promise<StoredMatchHistoryItem[]> {
     await this.init();
+    const now = Date.now();
     if (!this.db) {
-      return (this.lsGet<StoredMatchHistoryItem[]>('ck_history') ?? []).slice(0, limit);
+      const items = this.lsGet<StoredMatchHistoryItem[]>('ck_history') ?? [];
+      return items.filter((x) => !x.expiresAt || x.expiresAt > now).slice(0, limit);
     }
     const all = (await this.db.getAll('match_history')) as StoredMatchHistoryItem[];
-    return all.sort((a, b) => b.completedAt - a.completedAt).slice(0, limit);
+    return all
+      .filter((x) => !x.expiresAt || x.expiresAt > now)
+      .sort((a, b) => b.completedAt - a.completedAt)
+      .slice(0, limit);
   }
 
   public async saveProfile(profile: StoredProfile): Promise<void> {

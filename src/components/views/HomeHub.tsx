@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import {
   Bot,
   Compass,
@@ -34,6 +35,7 @@ export const HomeHub: React.FC = () => {
   const t = getTranslations(settings.language);
   const activeHero = getCharacterById(profile.selectedCharacterId);
   const activeTheme = getBoardThemeById(settings.selectedBoardThemeId);
+  const animDuration = settings.reducedMotion ? 0 : 0.36;
 
   const launchMode = (mode: 'pass_and_play' | 'vs_ai') => {
     updateSetupDraft({ mode });
@@ -57,7 +59,12 @@ export const HomeHub: React.FC = () => {
   return (
     <main className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 sm:py-8">
       {/* Hero Courtyard Banner */}
-      <section className="relative overflow-hidden rounded-2xl border border-[#E6A93C]/35 bg-[#1A2130] shadow-2xl">
+      <motion.section
+        initial={settings.reducedMotion ? false : { opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: animDuration, ease: [0.22, 1, 0.36, 1] }}
+        className="relative overflow-hidden rounded-2xl border border-[#E6A93C]/35 bg-[#1A2130] shadow-2xl"
+      >
         <img
           src={APP_CONFIG.assets.courtyardBackdrop}
           alt="Royal Enchanted Courtyard 3D Tabletop Backdrop"
@@ -166,7 +173,7 @@ export const HomeHub: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Resume Saved Match Banner (when offline match in progress) */}
       {savedMatchPreview && savedMatchPreview.phase !== 'GAME_OVER' && (

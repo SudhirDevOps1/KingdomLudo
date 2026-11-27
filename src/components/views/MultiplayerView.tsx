@@ -4,6 +4,7 @@ import { APP_CONFIG } from '../../config/appConfig';
 import { CHARACTERS, getCharacterById } from '../../data/characters';
 import { RULE_PRESETS } from '../../engine/ludoEngine';
 import { useGameStore } from '../../store/gameStore';
+import { AltchaWidget } from '../common/AltchaWidget';
 
 export const MultiplayerView: React.FC = () => {
   const profile = useGameStore((s) => s.profile);
@@ -31,6 +32,7 @@ export const MultiplayerView: React.FC = () => {
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedOnlyCode, setCopiedOnlyCode] = useState(false);
   const [nameInput, setNameInput] = useState(profile.displayName || 'Royal Commander');
+  const [altchaToken, setAltchaToken] = useState<string | null>(null);
 
   useEffect(() => {
     setNameInput(profile.displayName);
@@ -172,6 +174,13 @@ export const MultiplayerView: React.FC = () => {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="w-full sm:w-auto sm:min-w-[230px]">
+          <AltchaWidget
+            onVerify={(token) => setAltchaToken(token)}
+            onError={(msg) => showToast(msg)}
+          />
         </div>
       </section>
 
@@ -336,7 +345,13 @@ export const MultiplayerView: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => createPrivateRoom(maxPlayers, { ...RULE_PRESETS.classic_kingdom })}
+              onClick={() => {
+                if (!altchaToken) {
+                  showToast('Please check "I am not a robot" above before hosting a room.');
+                  return;
+                }
+                createPrivateRoom(maxPlayers, { ...RULE_PRESETS.classic_kingdom });
+              }}
               className="mt-6 min-h-[44px] w-full rounded-lg bg-[#E6A93C] px-4 py-2.5 text-sm font-bold text-[#10141E] transition hover:bg-[#D97706]"
             >
               Host Private Room
@@ -419,14 +434,26 @@ export const MultiplayerView: React.FC = () => {
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => joinPublicQueue(2)}
+                  onClick={() => {
+                    if (!altchaToken) {
+                      showToast('Please check "I am not a robot" above first.');
+                      return;
+                    }
+                    joinPublicQueue(2);
+                  }}
                   className="min-h-[44px] rounded-lg border border-[#16A34A]/50 bg-[#16A34A]/15 px-3 py-2.5 text-xs font-bold text-[#4ADE80] transition hover:bg-[#16A34A] hover:text-white"
                 >
                   Find 2P Match
                 </button>
                 <button
                   type="button"
-                  onClick={() => joinPublicQueue(4)}
+                  onClick={() => {
+                    if (!altchaToken) {
+                      showToast('Please check "I am not a robot" above first.');
+                      return;
+                    }
+                    joinPublicQueue(4);
+                  }}
                   className="min-h-[44px] rounded-lg border border-[#16A34A]/50 bg-[#16A34A]/15 px-3 py-2.5 text-xs font-bold text-[#4ADE80] transition hover:bg-[#16A34A] hover:text-white"
                 >
                   Find 4P Match

@@ -3,6 +3,7 @@ import { Cloud, KeyRound, LogIn, LogOut, Mail, Save, ShieldCheck, Sparkles, User
 import { APP_CONFIG } from '../../config/appConfig';
 import { getCharacterById } from '../../data/characters';
 import { useGameStore } from '../../store/gameStore';
+import { AltchaWidget } from '../common/AltchaWidget';
 
 export const ProfileView: React.FC = () => {
   const profile = useGameStore((s) => s.profile);
@@ -20,6 +21,7 @@ export const ProfileView: React.FC = () => {
   const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
+  const [altchaToken, setAltchaToken] = useState<string | null>(null);
 
   const hero = getCharacterById(profile.selectedCharacterId);
   const kMeta = APP_CONFIG.kingdoms[hero.kingdom];
@@ -32,6 +34,10 @@ export const ProfileView: React.FC = () => {
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!altchaToken) {
+      showToast('Please complete the "I am not a robot" verification first.');
+      return;
+    }
     if (!emailInput || !passwordInput) {
       showToast('Please provide both email and password.');
       return;
@@ -179,6 +185,10 @@ export const ProfileView: React.FC = () => {
                         className="w-full bg-transparent text-xs text-[#E7E2D8] placeholder-[#E7E2D8]/40 focus:outline-none"
                       />
                     </div>
+                    <AltchaWidget
+                      onVerify={(token) => setAltchaToken(token)}
+                      onError={(msg) => showToast(msg)}
+                    />
                     <button
                       type="submit"
                       disabled={authBusy}
@@ -198,7 +208,13 @@ export const ProfileView: React.FC = () => {
                 <button
                   type="button"
                   disabled={authBusy}
-                  onClick={() => void signInGoogle()}
+                  onClick={() => {
+                    if (!altchaToken) {
+                      showToast('Please check "I am not a robot" above first.');
+                      return;
+                    }
+                    void signInGoogle();
+                  }}
                   className="inline-flex min-h-[42px] w-full items-center justify-center gap-2 rounded-lg border border-[#E7E2D8]/20 bg-[#10141E] px-4 py-2 text-xs font-bold text-[#E7E2D8] transition hover:border-[#E6A93C] disabled:opacity-50"
                 >
                   <Sparkles className="h-4 w-4 text-[#E6A93C]" />

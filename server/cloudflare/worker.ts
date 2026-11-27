@@ -1,5 +1,6 @@
 /// <reference types="@cloudflare/workers-types" />
 
+import { createAltchaChallenge, verifyAltchaPayload } from './altcha';
 import { LudoRoomDO } from './ludoRoomDO';
 
 export { LudoRoomDO };
@@ -9,6 +10,7 @@ interface Env {
   ASSETS: { fetch: (request: Request) => Promise<Response> };
   SUPABASE_URL?: string;
   SUPABASE_ANON_KEY?: string;
+  ALTCHA_HMAC_KEY?: string;
 }
 
 // Lightweight per-isolate IP rate limiter to prevent abuse & unnecessary DO wakeups
@@ -16,7 +18,6 @@ const ipBuckets = new Map<string, { count: number; resetAt: number }>();
 
 function checkEdgeRateLimit(ip: string, limit: number, windowMs: number): boolean {
   const now = Date.now();
-  // Periodic cleanup if map grows
   if (ipBuckets.size > 2000) {
     for (const [key, entry] of ipBuckets.entries()) {
       if (now > entry.resetAt) ipBuckets.delete(key);
@@ -34,12 +35,31 @@ function checkEdgeRateLimit(ip: string, limit: number, windowMs: number): boolea
   return true;
 }
 
+const SECURITY_HEADERS: Record<string, string> = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+};
+
+function withSecurityHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) {
+    if (!headers.has(k)) headers.set(k, v);
+  }
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 function jsonWithHeaders(body: unknown, status = 200): Response {
   return Response.json(body, {
     status,
     headers: {
       'Cache-Control': 'no-store',
-      'X-Content-Type-Options': 'nosniff',
+      ...SECURITY_HEADERS,
     },
   });
 }
@@ -49,9 +69,9 @@ export default {
     const url = new URL(request.url);
     const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
 
-    // Rate-limit API & WebSocket upgrade endpoints (40 requests per 60s per IP)
+    // Strict per-IP rate limit on API & WebSocket upgrade endpoints (30 requests per 60s)
     if (url.pathname.startsWith('/api/') || url.pathname === '/ws') {
-      if (!checkEdgeRateLimit(clientIp, 40, 60_000)) {
+      if (!checkEdgeRateLimit(clientIp, 30, 60_000)) {
         return jsonWithHeaders(
           { error: 'Too many requests. Please slow down and try again shortly.' },
           429,
@@ -59,47 +79,74 @@ export default {
       }
     }
 
-    // API Health check
+    // Minimal public health check (no internal infra details exposed)
     if (url.pathname === '/api/health') {
-      return jsonWithHeaders({
-        status: 'healthy',
-        platform: 'cloudflare-workers',
-        durableObjects: true,
-        uptime: 'serverless-edge',
-      });
+      return jsonWithHeaders({ status: 'ok' });
     }
 
-    // Database / Runtime capabilities endpoint
+    // ALTCHA Proof-of-Work Challenge endpoint
+    if (url.pathname === '/api/altcha/challenge' && request.method === 'GET') {
+      const challenge = await createAltchaChallenge(env.ALTCHA_HMAC_KEY);
+      return jsonWithHeaders(challenge);
+    }
+
+    // ALTCHA Verification endpoint
+    if (url.pathname === '/api/altcha/verify' && request.method === 'POST') {
+      try {
+        const body = (await request.json()) as { payload?: string };
+        const result = await verifyAltchaPayload(body.payload || '', env.ALTCHA_HMAC_KEY);
+        return jsonWithHeaders({ ok: result.valid, reason: result.reason }, result.valid ? 200 : 403);
+      } catch {
+        return jsonWithHeaders({ ok: false, reason: 'Invalid request body' }, 400);
+      }
+    }
+
+    // Sanitized Runtime Capabilities endpoint
     if (url.pathname === '/api/config/capabilities') {
       return jsonWithHeaders({
         activeProvider: {
-          provider: 'cloudflare-durable-objects',
-          engineKind: 'edge-sqlite',
-          notes: 'Authoritative WebSocket rooms backed by Cloudflare Durable Objects.',
+          provider: 'edge-multiplayer',
+          engineKind: 'realtime',
+          notes: 'Authoritative WebSocket rooms active.',
         },
         supportedProviders: [
           {
-            provider: 'cloudflare-durable-objects',
-            engineKind: 'edge-sqlite',
-            notes: 'Zero-cold-start multiplayer rooms & turn alarms at the Cloudflare edge.',
+            provider: 'edge-multiplayer',
+            engineKind: 'realtime',
+            notes: 'Real-time authoritative multiplayer rooms.',
           },
           {
-            provider: 'supabase',
-            engineKind: 'postgres',
-            notes: 'Optional cloud auth & match history persistence.',
+            provider: 'cloud-sync',
+            engineKind: 'auth',
+            notes: 'Optional cloud profile & 30-day match sync.',
           },
         ],
       });
     }
 
-    // Guest Token generation endpoint
+    // Guest Token generation endpoint (POST + ALTCHA protected)
     if (url.pathname === '/api/guest/session') {
+      if (request.method !== 'POST') {
+        return jsonWithHeaders({ error: 'Method not allowed' }, 405);
+      }
+      try {
+        const body = (await request.json()) as { altcha?: string };
+        const check = await verifyAltchaPayload(body.altcha || '', env.ALTCHA_HMAC_KEY);
+        if (!check.valid) {
+          return jsonWithHeaders({ error: check.reason || 'Human verification required' }, 403);
+        }
+      } catch {
+        return jsonWithHeaders({ error: 'ALTCHA verification payload required' }, 400);
+      }
+
       const guestId = `gst_${crypto.randomUUID()}`;
       const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
+      const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
       return jsonWithHeaders({
         guestId,
         token,
         createdAt: Date.now(),
+        expiresAt,
       });
     }
 
@@ -120,9 +167,10 @@ export default {
       return roomStub.fetch(request);
     }
 
-    // Fallback to static Cloudflare Pages / assets
+    // Fallback to static Cloudflare Pages / assets with security headers
     if (env.ASSETS) {
-      return env.ASSETS.fetch(request);
+      const assetResponse = await env.ASSETS.fetch(request);
+      return withSecurityHeaders(assetResponse);
     }
 
     return new Response('Not found', { status: 404 });

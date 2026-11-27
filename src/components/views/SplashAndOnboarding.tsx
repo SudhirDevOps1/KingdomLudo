@@ -5,23 +5,17 @@ import { useGameStore } from '../../store/gameStore';
 
 export const SplashScreen: React.FC = () => {
   const initialized = useGameStore((s) => s.initialized);
-  const onboardingCompleted = useGameStore((s) => s.profile.onboardingCompleted);
   const pendingDeepLinkRoom = useGameStore((s) => s.pendingDeepLinkRoom);
   const navigate = useGameStore((s) => s.navigate);
 
   useEffect(() => {
     if (!initialized) return;
-    const timer = setTimeout(() => {
-      if (pendingDeepLinkRoom) {
-        navigate('multiplayer');
-      } else if (!onboardingCompleted) {
-        navigate('onboarding');
-      } else {
-        navigate('home');
-      }
-    }, 900);
-    return () => clearTimeout(timer);
-  }, [initialized, onboardingCompleted, pendingDeepLinkRoom, navigate]);
+    if (pendingDeepLinkRoom) {
+      navigate('multiplayer');
+    } else {
+      navigate('home');
+    }
+  }, [initialized, pendingDeepLinkRoom, navigate]);
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#10141E] px-6 text-center">
@@ -57,7 +51,7 @@ export const SplashScreen: React.FC = () => {
 
         <button
           type="button"
-          onClick={() => navigate(onboardingCompleted ? 'home' : 'onboarding')}
+          onClick={() => navigate('home')}
           className="mt-6 min-h-[44px] rounded-lg border border-[#E6A93C]/40 bg-[#1A2130]/90 px-5 py-2.5 text-sm font-semibold text-[#E7E2D8] transition hover:border-[#E6A93C] hover:text-[#E6A93C]"
         >
           Play KingdomLudo
