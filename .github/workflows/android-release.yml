@@ -60,7 +60,7 @@ jobs:
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/release-keystore.jks
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release-keystore.jks
 
       - name: Generate Fallback Alpha Signing Keystore (when secret not set)
         if: env.ANDROID_KEYSTORE_BASE64 == ''
@@ -68,7 +68,7 @@ jobs:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           keytool -genkeypair -v \
-            -keystore android/release-keystore.jks \
+            -keystore android/app/release-keystore.jks \
             -alias kingdomludo-alpha \
             -keyalg RSA -keysize 2048 -validity 3650 \
             -storepass "kingdomludo-alpha-pass" \
@@ -138,7 +138,7 @@ jobs:
       - name: Secure Clean Up Keystore
         if: always()
         run: |
-          if [ -f android/release-keystore.jks ]; then
-            shred -u -z -n 3 android/release-keystore.jks 2>/dev/null || rm -f android/release-keystore.jks
+          if [ -f android/app/release-keystore.jks ]; then
+            shred -u -z -n 3 android/app/release-keystore.jks 2>/dev/null || rm -f android/app/release-keystore.jks
             echo "Release keystore securely shredded and removed."
           fi
