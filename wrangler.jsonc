@@ -1,13 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "kingdomludo-multiplayer",
+  "name": "kingdomludo",
   "main": "server/cloudflare/worker.ts",
   "compatibility_date": "2026-03-01",
   "compatibility_flags": ["nodejs_compat"],
-  // Build configuration so Cloudflare Workers dashboard auto-build works correctly
-  "build": {
-    "command": "pnpm install --frozen-lockfile && pnpm run build"
-  },
   "durable_objects": {
     "bindings": [
       {
