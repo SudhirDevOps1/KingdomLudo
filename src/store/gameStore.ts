@@ -208,6 +208,7 @@ interface GameStore {
   signInEmail: (email: string, pass: string) => Promise<boolean>;
   signUpEmail: (email: string, pass: string, displayName: string) => Promise<boolean>;
   resendEmailConfirmation: (email: string) => Promise<boolean>;
+  clearAuthError: () => void;
   signOutGoogle: () => Promise<void>;
   deleteAccount: () => Promise<void>;
   resetLocalData: () => Promise<void>;
@@ -602,6 +603,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
 
     clearToast: () => set({ toastMessage: null }),
+    clearAuthError: () => set({ authError: null }),
 
     completeOnboarding: async () => {
       const next = { ...get().profile, onboardingCompleted: true };

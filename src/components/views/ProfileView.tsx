@@ -16,6 +16,7 @@ export const ProfileView: React.FC = () => {
   const supabaseReady = useGameStore((s) => s.supabaseReady);
   const authBusy = useGameStore((s) => s.authBusy);
   const authError = useGameStore((s) => s.authError);
+  const clearAuthError = useGameStore((s) => s.clearAuthError);
   const updateDisplayName = useGameStore((s) => s.updateDisplayName);
   const updateAvatar = useGameStore((s) => s.updateAvatar);
   const signInGoogle = useGameStore((s) => s.signInGoogle);
@@ -220,7 +221,10 @@ export const ProfileView: React.FC = () => {
                   <div className="flex border-b border-[#E7E2D8]/15 pb-2 text-xs font-bold">
                     <button
                       type="button"
-                      onClick={() => setAuthTab('login')}
+                      onClick={() => {
+                        setAuthTab('login');
+                        clearAuthError();
+                      }}
                       className={`flex-1 py-1 text-center transition ${
                         authTab === 'login' ? 'border-b-2 border-[#E6A93C] text-[#E6A93C]' : 'text-[#E7E2D8]/60'
                       }`}
@@ -229,7 +233,10 @@ export const ProfileView: React.FC = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setAuthTab('register')}
+                      onClick={() => {
+                        setAuthTab('register');
+                        clearAuthError();
+                      }}
                       className={`flex-1 py-1 text-center transition ${
                         authTab === 'register' ? 'border-b-2 border-[#E6A93C] text-[#E6A93C]' : 'text-[#E7E2D8]/60'
                       }`}
@@ -245,7 +252,10 @@ export const ProfileView: React.FC = () => {
                         type="email"
                         placeholder="you@domain.com"
                         value={emailInput}
-                        onChange={(e) => setEmailInput(e.target.value)}
+                        onChange={(e) => {
+                          setEmailInput(e.target.value);
+                          if (authError) clearAuthError();
+                        }}
                         className="w-full bg-transparent text-xs text-[#E7E2D8] placeholder-[#E7E2D8]/40 focus:outline-none"
                       />
                     </div>

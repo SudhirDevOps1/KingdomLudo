@@ -9,6 +9,8 @@
 - [x] DiceBear Avatar Studio + AES-256-GCM local encryption + `v1 -> v2` data migrations (`AC-03`, `AC-05`)
 - [x] Replace all raw UI emojis with Lucide SVG icons and streamline first-load HomeHub
 - [x] Complete ATLAS documentation, continuity files, and `.env.example` updates
+- [x] Add Ephemeral Room Chat, P2P WebRTC Voice, Custom Room Name, DO Auto-Cleanup & Logged-In Global Leaderboard
+- [x] Integrate `version:verify` into CI and sync `.release-please-manifest.json`
 
 ## In Progress
 - [ ] Live verification of Google OAuth once owner configures Client ID/Secret in Supabase Dashboard

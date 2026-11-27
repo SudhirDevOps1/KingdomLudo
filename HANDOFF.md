@@ -12,7 +12,8 @@
   - Added 30-day TTL persistence, AES-256-GCM local vault, and `v1 -> v2` data migrations.
   - Added DiceBear Avatar Studio (`ProfileView.tsx`, `TopNav.tsx`) and Resend Confirmation Email button.
   - Replaced all raw UI emojis with `lucide-react` icons and removed the blocking splash/onboarding wall.
-  - Completed ATLAS documentation set (`docs/PRODUCT_REQUIREMENTS.md`, `docs/DATABASE_SCHEMA.md`, `docs/USER_FLOWS.md`, `docs/ACCEPTANCE_CRITERIA.md`, `AGENTS.md`, `MEMORY.md`, `TASKS.md`, `ASSUMPTIONS.md`, `TERMS.md`, `COOKIE_POLICY.md`).
+  - Added Ephemeral Room Chat, P2P WebRTC Voice Chat, Custom Room Name, DO auto-cleanup (`deleteAll()`), and Logged-In Global Leaderboard.
+  - Added `version:verify` to `.github/workflows/ci.yml`, `.release-please-manifest.json` sync, and `clearAuthError` UX fix in `ProfileView`.
 - **Next Actions for Owner**:
   1. In **Supabase Dashboard → Authentication → Providers → Email**, either keep email confirmation ON (users click link / Resend button) or toggle it OFF for instant email login.
   2. In **Supabase Dashboard → Authentication → Providers → Google**, add Google OAuth Client ID & Secret to enable Single-Click Google OAuth.

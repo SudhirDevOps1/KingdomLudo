@@ -144,6 +144,17 @@ export const BUILD_TIMESTAMP = '${timestamp}';
     }
   }
 
+  // 4b. Sync .release-please-manifest.json if present
+  const rpManifestPath = path.join(ROOT_DIR, '.release-please-manifest.json');
+  if (fs.existsSync(rpManifestPath)) {
+    const rpJson = JSON.parse(fs.readFileSync(rpManifestPath, 'utf-8')) as Record<string, string>;
+    if (rpJson['.'] !== cleanVersion) {
+      rpJson['.'] = cleanVersion;
+      fs.writeFileSync(rpManifestPath, JSON.stringify(rpJson, null, 2) + '\n', 'utf-8');
+      updatedFiles.push('.release-please-manifest.json');
+    }
+  }
+
   // 5. README.md & CHANGELOG.md & docs/*.md
   const markdownFiles: string[] = [];
   const readmePath = path.join(ROOT_DIR, 'README.md');
