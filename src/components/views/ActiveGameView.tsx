@@ -14,6 +14,7 @@ import {
   Lock,
   MapPin,
   Maximize2,
+  MessageSquare,
   Minimize2,
   Pause,
   Play,
@@ -36,6 +37,7 @@ import {
 } from '../../three/boardScene';
 import { Board2DFallback } from '../game/Board2DFallback';
 import { HowToPlayModal } from '../game/HowToPlayModal';
+import { RoomChatVoicePanel } from '../game/RoomChatVoicePanel';
 
 export const ActiveGameView: React.FC = () => {
   const match = useGameStore((s) => s.activeMatch);
@@ -58,6 +60,7 @@ export const ActiveGameView: React.FC = () => {
   const [cameraMode, setCameraMode] = useState<CameraViewMode>('isometric');
   const [cameraLocked, setCameraLocked] = useState(false);
   const [showMoveLog, setShowMoveLog] = useState(false);
+  const [showRoomChat, setShowRoomChat] = useState(false);
   const [turnSecondsLeft, setTurnSecondsLeft] = useState<number | null>(null);
   const [exploreMode, setExploreMode] = useState(false);
   const [zenMode, setZenMode] = useState(false);
@@ -541,6 +544,22 @@ export const ActiveGameView: React.FC = () => {
             <Maximize2 className="h-4 w-4" />
           </button>
 
+          {onlineRoom && (
+            <button
+              type="button"
+              onClick={() => setShowRoomChat(!showRoomChat)}
+              title="Room Chat & Voice"
+              aria-label="Toggle Room Chat and Voice"
+              className={`flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border transition ${
+                showRoomChat
+                  ? 'border-[#E6A93C] bg-[#E6A93C]/20 text-[#E6A93C]'
+                  : 'border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C]'
+              }`}
+            >
+              <MessageSquare className="h-4 w-4" />
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setShowMoveLog(!showMoveLog)}
@@ -661,6 +680,13 @@ export const ActiveGameView: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Online Room Chat & Voice Drawer */}
+      {onlineRoom && showRoomChat && (
+        <aside className="absolute right-4 top-16 z-30 w-80 max-w-[calc(100vw-2rem)] shadow-2xl">
+          <RoomChatVoicePanel compact />
+        </aside>
       )}
 
       {/* Move Log Drawer */}

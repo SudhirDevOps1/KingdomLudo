@@ -167,13 +167,14 @@ export class AuthoritativeGameServer {
       return;
     }
 
-    if (!msg || typeof msg.type !== 'string' || !('clientId' in msg) || !msg.clientId) {
+    const senderId = 'clientId' in msg ? msg.clientId : 'fromClientId' in msg ? msg.fromClientId : '';
+    if (!msg || typeof msg.type !== 'string' || !senderId) {
       this.sendError(conn.ws, 'INVALID_PAYLOAD', 'Missing clientId or message type.');
       return;
     }
 
-    conn.clientId = msg.clientId;
-    this.clientSockets.set(msg.clientId, conn.ws);
+    conn.clientId = senderId;
+    this.clientSockets.set(senderId, conn.ws);
 
     try {
       switch (msg.type) {
@@ -209,6 +210,12 @@ export class AuthoritativeGameServer {
           break;
         case 'queue:leave':
           this.handleQueueLeave(msg.clientId);
+          break;
+        case 'chat:send':
+          this.handleChatSend(msg);
+          break;
+        case 'voice:signal':
+          this.handleVoiceSignal(msg);
           break;
         default:
           this.sendError(conn.ws, 'UNKNOWN_TYPE', 'Unsupported message type.');
@@ -320,6 +327,46 @@ export class AuthoritativeGameServer {
 
     conn.roomCode = code;
     this.broadcastRoom(room);
+  }
+
+  private handleChatSend(msg: Extract<ClientToServerMessage, { type: 'chat:send' }>): void {
+    const room = this.rooms.get(msg.roomCode.toUpperCase());
+    if (!room) return;
+    const seat = room.seats.find((s) => s.clientId === msg.clientId);
+    if (!seat) return;
+    const cleanText = (msg.text || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 200);
+    if (!cleanText) return;
+    this.broadcastRoom(room, {
+      type: 'chat:message',
+      message: {
+        id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        senderClientId: seat.clientId!,
+        senderName: seat.name,
+        senderColor: seat.color,
+        text: cleanText,
+        sentAt: Date.now(),
+      },
+    });
+  }
+
+  private handleVoiceSignal(msg: Extract<ClientToServerMessage, { type: 'voice:signal' }>): void {
+    const room = this.rooms.get(msg.roomCode.toUpperCase());
+    if (!room) return;
+    for (const seat of room.seats) {
+      if (!seat.clientId) continue;
+      if (msg.toClientId === '*' ? seat.clientId !== msg.fromClientId : seat.clientId === msg.toClientId) {
+        const sock = this.clientSockets.get(seat.clientId);
+        if (sock) {
+          this.send(sock, {
+            type: 'voice:signal',
+            fromClientId: msg.fromClientId,
+            toClientId: seat.clientId,
+            signalType: msg.signalType,
+            payload: msg.payload,
+          });
+        }
+      }
+    }
   }
 
   private handleReady(

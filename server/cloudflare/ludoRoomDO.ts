@@ -23,6 +23,7 @@ interface Env {
 
 interface StoredRoomState {
   roomCode: string;
+  roomName: string;
   hostClientId: string;
   boardThemeId: string;
   maxPlayers: 2 | 3 | 4;
@@ -31,6 +32,7 @@ interface StoredRoomState {
   seats: RoomSeatSummary[];
   matchState: MatchState | null;
   turnDeadlineAt: number | null;
+  cleanupAt?: number | null;
 }
 
 interface QueueEntry {
@@ -177,6 +179,17 @@ export class LudoRoomDO {
     const seat = this.room.seats.find((s) => s.clientId === session.clientId);
     if (seat) {
       seat.connected = false;
+      const anyConnected = this.room.seats.some((s) => s.clientId !== null && s.connected);
+      if (!anyConnected) {
+        if (this.room.status === 'lobby' || this.room.status === 'finished') {
+          this.room = null;
+          await this.state.storage.deleteAll();
+          return;
+        }
+        // Schedule cleanup if all players stay disconnected for 60s
+        this.room.cleanupAt = Date.now() + 60_000;
+        await this.state.storage.setAlarm(this.room.cleanupAt);
+      }
       this.broadcast({
         type: 'room:snapshot',
         room: this.createSnapshot(),
@@ -194,7 +207,19 @@ export class LudoRoomDO {
 
   public async alarm(): Promise<void> {
     const room = await this.loadState();
-    if (!room || room.status !== 'playing' || !room.matchState) return;
+    if (!room) return;
+
+    // Auto-cleanup finished or abandoned rooms so zero stale data remains in DO storage
+    if (
+      room.status === 'finished' ||
+      (room.cleanupAt && Date.now() >= room.cleanupAt && !room.seats.some((s) => s.clientId !== null && s.connected))
+    ) {
+      this.room = null;
+      await this.state.storage.deleteAll();
+      return;
+    }
+
+    if (room.status !== 'playing' || !room.matchState) return;
 
     if (room.turnDeadlineAt && Date.now() >= room.turnDeadlineAt) {
       room.matchState = forceTurnTimeout(room.matchState);
@@ -292,6 +317,7 @@ export class LudoRoomDO {
 
         const defaultSeats = getSeatsForPlayerCount(msg.maxPlayers);
         const hostName = (msg.playerName || '').trim().slice(0, 24) || 'Host Commander';
+        const roomName = (msg.roomName || '').trim().slice(0, 32) || `${hostName}'s Arena`;
         const hostSeat: RoomSeatSummary = {
           seatIndex: 0,
           color: defaultSeats[0],
@@ -321,6 +347,7 @@ export class LudoRoomDO {
 
         this.room = {
           roomCode: resolvedCode,
+          roomName,
           hostClientId: msg.clientId,
           boardThemeId: msg.boardThemeId,
           maxPlayers: msg.maxPlayers,
@@ -463,7 +490,7 @@ export class LudoRoomDO {
           const remaining = room.seats.filter((s) => s.clientId !== null);
           if (remaining.length === 0) {
             this.room = null;
-            await this.state.storage.delete('room_data');
+            await this.state.storage.deleteAll();
             return;
           }
 
@@ -584,7 +611,8 @@ export class LudoRoomDO {
 
         if (room.matchState.phase === 'GAME_OVER') {
           room.status = 'finished';
-          await this.state.storage.deleteAlarm();
+          room.cleanupAt = Date.now() + 60_000;
+          await this.state.storage.setAlarm(room.cleanupAt);
           this.syncMatchToSupabase(room);
         } else {
           room.turnDeadlineAt = Date.now() + 25000;
@@ -624,6 +652,48 @@ export class LudoRoomDO {
         });
         break;
       }
+
+      case 'chat:send': {
+        if (!room) return;
+        const senderSeat = room.seats.find((s) => s.clientId === msg.clientId);
+        if (!senderSeat) return;
+        const cleanText = (msg.text || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 200);
+        if (!cleanText) return;
+
+        // Ephemeral broadcast only — never persisted to storage or database
+        this.broadcast({
+          type: 'chat:message',
+          message: {
+            id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            senderClientId: senderSeat.clientId!,
+            senderName: senderSeat.name,
+            senderColor: senderSeat.color,
+            text: cleanText,
+            sentAt: Date.now(),
+          },
+        });
+        break;
+      }
+
+      case 'voice:signal': {
+        if (!room) return;
+        const sender = room.seats.find((s) => s.clientId === msg.fromClientId);
+        if (!sender) return;
+
+        // Relay WebRTC signaling directly to target peer (or all others for join/leave)
+        for (const [sock, sess] of this.clientSessions.entries()) {
+          if (msg.toClientId === '*' ? sess.clientId !== msg.fromClientId : sess.clientId === msg.toClientId) {
+            this.sendToSocket(sock, {
+              type: 'voice:signal',
+              fromClientId: msg.fromClientId,
+              toClientId: sess.clientId,
+              signalType: msg.signalType,
+              payload: msg.payload,
+            });
+          }
+        }
+        break;
+      }
     }
   }
 
@@ -633,6 +703,7 @@ export class LudoRoomDO {
     }
     return {
       roomCode: this.room.roomCode,
+      roomName: this.room.roomName,
       hostClientId: this.room.hostClientId,
       boardThemeId: this.room.boardThemeId,
       maxPlayers: this.room.maxPlayers,

@@ -5,6 +5,7 @@ import { CHARACTERS, getCharacterById } from '../../data/characters';
 import { RULE_PRESETS } from '../../engine/ludoEngine';
 import { useGameStore } from '../../store/gameStore';
 import { AltchaWidget } from '../common/AltchaWidget';
+import { RoomChatVoicePanel } from '../game/RoomChatVoicePanel';
 
 export const MultiplayerView: React.FC = () => {
   const profile = useGameStore((s) => s.profile);
@@ -28,6 +29,7 @@ export const MultiplayerView: React.FC = () => {
   const navigate = useGameStore((s) => s.navigate);
 
   const [maxPlayers, setMaxPlayers] = useState<2 | 3 | 4>(4);
+  const [roomNameInput, setRoomNameInput] = useState('');
   const [joinCode, setJoinCode] = useState(pendingDeepLinkRoom ?? '');
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedOnlyCode, setCopiedOnlyCode] = useState(false);
@@ -190,7 +192,7 @@ export const MultiplayerView: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E7E2D8]/12 pb-5">
             <div>
               <span className="text-xs font-semibold uppercase tracking-wider text-[#E6A93C]">
-                Private Courtyard Lobby
+                {onlineRoom.roomName || 'Private Courtyard Lobby'}
               </span>
               <div className="mt-1 flex flex-wrap items-center gap-2.5">
                 <h2 className="font-mono-num text-3xl font-bold tracking-[0.2em] text-[#E7E2D8]">
@@ -314,6 +316,8 @@ export const MultiplayerView: React.FC = () => {
               );
             })}
           </div>
+
+          <RoomChatVoicePanel />
         </section>
       ) : (
         <div className="grid gap-6 lg:grid-cols-3">
@@ -330,7 +334,22 @@ export const MultiplayerView: React.FC = () => {
                 Generate a 6-character invite code and deep-link URL to play directly with friends.
               </p>
 
-              <div className="mt-5">
+              <div className="mt-4">
+                <label htmlFor="room-name-input" className="text-xs font-semibold uppercase tracking-wider text-[#E7E2D8]/70">
+                  Room Name (Optional)
+                </label>
+                <input
+                  id="room-name-input"
+                  type="text"
+                  maxLength={32}
+                  value={roomNameInput}
+                  onChange={(e) => setRoomNameInput(e.target.value)}
+                  placeholder={`${profile.displayName}'s Arena`}
+                  className="mt-1.5 min-h-[40px] w-full rounded-lg border border-[#E7E2D8]/15 bg-[#10141E] px-3 text-xs text-[#E7E2D8] placeholder-[#E7E2D8]/40 focus:border-[#E6A93C] focus:outline-none"
+                />
+              </div>
+
+              <div className="mt-4">
                 <label className="text-xs font-semibold uppercase tracking-wider text-[#E7E2D8]/70">
                   Max Seats
                 </label>
@@ -360,7 +379,7 @@ export const MultiplayerView: React.FC = () => {
                   showToast('Please check "I am not a robot" above before hosting a room.');
                   return;
                 }
-                createPrivateRoom(maxPlayers, { ...RULE_PRESETS.classic_kingdom });
+                createPrivateRoom(maxPlayers, { ...RULE_PRESETS.classic_kingdom }, roomNameInput);
               }}
               className="mt-6 min-h-[44px] w-full rounded-lg bg-[#E6A93C] px-4 py-2.5 text-sm font-bold text-[#10141E] transition hover:bg-[#D97706]"
             >

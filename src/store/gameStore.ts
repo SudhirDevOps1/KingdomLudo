@@ -41,7 +41,9 @@ import {
   type GuestSession,
 } from '../services/auth/authService';
 import { getSupabaseClient, isSupabaseConfigured } from '../services/supabase/supabaseClient';
+import { voiceManager } from '../services/voice/webrtcVoice';
 import type {
+  ChatMessageItem,
   ClientToServerMessage,
   RoomSnapshot,
   ServerToClientMessage,
@@ -63,7 +65,7 @@ export type AppScreen =
   | 'help'
   | 'legal';
 
-export type ChronicleTab = 'history' | 'stats' | 'achievements' | 'collection';
+export type ChronicleTab = 'history' | 'leaderboard' | 'stats' | 'achievements' | 'collection';
 export type SettingsTab = 'general' | 'audio' | 'graphics' | 'language' | 'privacy' | 'database';
 export type LegalTab = 'terms' | 'privacy' | 'cookies' | 'fair-play';
 
@@ -182,6 +184,9 @@ interface GameStore {
   wsConnecting: boolean;
   clientId: string;
   onlineRoom: RoomSnapshot | null;
+  chatMessages: ChatMessageItem[];
+  voiceEnabled: boolean;
+  voiceMuted: boolean;
   queueStatus: { inQueue: boolean; position: number; preferredPlayers: 2 | 4; queuedCount: number } | null;
   pendingDeepLinkRoom: string | null;
 
@@ -227,11 +232,14 @@ interface GameStore {
   // Online Multiplayer
   connectWebSocket: (roomCode?: string) => void;
   disconnectWebSocket: () => void;
-  createPrivateRoom: (maxPlayers: 2 | 3 | 4, rules: RuleConfig) => void;
+  createPrivateRoom: (maxPlayers: 2 | 3 | 4, rules: RuleConfig, roomName?: string) => void;
   joinPrivateRoom: (roomCode: string) => void;
   setRoomReady: (ready: boolean) => void;
   startPrivateRoom: () => void;
   leavePrivateRoom: () => void;
+  sendChatMessage: (text: string) => void;
+  toggleVoice: () => Promise<void>;
+  toggleVoiceMute: () => void;
   joinPublicQueue: (preferredPlayers: 2 | 4) => void;
   leavePublicQueue: () => void;
   setPendingDeepLinkRoom: (code: string | null) => void;
@@ -374,6 +382,22 @@ export const useGameStore = create<GameStore>((set, get) => {
             duration_ms: item.durationMs,
           }),
         ).catch(() => {});
+        void Promise.resolve(
+          supabase
+            .from('player_statistics')
+            .upsert(
+              {
+                user_id: updatedProfile.uid,
+                matches_played: nextStats.matchesPlayed,
+                wins: nextStats.wins,
+                losses: Math.max(0, nextStats.matchesPlayed - nextStats.wins),
+                captures: nextStats.captures,
+                sixes_rolled: nextStats.sixesRolled,
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: 'user_id' },
+            ),
+        ).catch(() => {});
       }
     }
   };
@@ -452,6 +476,9 @@ export const useGameStore = create<GameStore>((set, get) => {
     wsConnecting: false,
     clientId: createClientId(),
     onlineRoom: null,
+    chatMessages: [],
+    voiceEnabled: false,
+    voiceMuted: false,
     queueStatus: null,
     pendingDeepLinkRoom: null,
 
@@ -1056,6 +1083,10 @@ export const useGameStore = create<GameStore>((set, get) => {
         void localPersistence.saveActiveMatch(curr);
         set({ savedMatchPreview: curr });
       }
+      if (curr && (curr.mode === 'online_private' || curr.mode === 'online_public')) {
+        voiceManager.leave();
+        set({ chatMessages: [], voiceEnabled: false, voiceMuted: false });
+      }
       set({ activeMatch: null, isPaused: false, screen: 'home' });
     },
 
@@ -1142,6 +1173,16 @@ export const useGameStore = create<GameStore>((set, get) => {
           const msg = JSON.parse(evt.data as string) as ServerToClientMessage;
           if (msg.type === 'error') {
             get().showToast(msg.message);
+            return;
+          }
+          if (msg.type === 'chat:message') {
+            set((state) => ({
+              chatMessages: [...state.chatMessages.slice(-49), msg.message],
+            }));
+            return;
+          }
+          if (msg.type === 'voice:signal') {
+            void voiceManager.handleSignal(msg.fromClientId, msg.signalType, msg.payload);
             return;
           }
           if (msg.type === 'queue:status') {
@@ -1240,9 +1281,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       set({ wsConnected: false, wsConnecting: false });
     },
 
-    createPrivateRoom: (maxPlayers, rules) => {
+    createPrivateRoom: (maxPlayers, rules, roomName) => {
       const roomCode = generateClientRoomCode();
-      set({ onlineRoom: null });
+      voiceManager.leave();
+      set({ onlineRoom: null, chatMessages: [], voiceEnabled: false, voiceMuted: false });
       const { profile, settings, clientId } = get();
       const eq = profile.equippedCustomizations[profile.selectedCharacterId] ?? {
         outfitId: 'royal-guard',
@@ -1252,6 +1294,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         {
           type: 'room:create',
           roomCode,
+          roomName: roomName?.trim().slice(0, 32) || `${profile.displayName}'s Arena`,
           clientId,
           playerName: profile.displayName,
           userId: profile.uid,
@@ -1316,6 +1359,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     leavePrivateRoom: () => {
       const room = get().onlineRoom;
+      voiceManager.leave();
       if (room && wsInstance && wsInstance.readyState === WebSocket.OPEN) {
         wsInstance.send(
           JSON.stringify({
@@ -1325,8 +1369,60 @@ export const useGameStore = create<GameStore>((set, get) => {
           }),
         );
       }
-      set({ onlineRoom: null });
+      set({ onlineRoom: null, chatMessages: [], voiceEnabled: false, voiceMuted: false });
       get().disconnectWebSocket();
+    },
+
+    sendChatMessage: (text) => {
+      const room = get().onlineRoom;
+      const clean = text.trim().slice(0, 200);
+      if (!room || !clean) return;
+      sendWs(
+        {
+          type: 'chat:send',
+          roomCode: room.roomCode,
+          clientId: get().clientId,
+          text: clean,
+        },
+        room.roomCode,
+      );
+    },
+
+    toggleVoice: async () => {
+      const room = get().onlineRoom;
+      if (!room) return;
+      if (voiceManager.isActive()) {
+        voiceManager.leave();
+        set({ voiceEnabled: false, voiceMuted: false });
+        get().showToast('Left voice chat.');
+        return;
+      }
+      const res = await voiceManager.join((toClientId, signalType, payload) => {
+        sendWs(
+          {
+            type: 'voice:signal',
+            roomCode: room.roomCode,
+            fromClientId: get().clientId,
+            toClientId,
+            signalType,
+            payload,
+          },
+          room.roomCode,
+        );
+      });
+      if (!res.ok) {
+        get().showToast(res.error || 'Could not enable voice chat.');
+        set({ voiceEnabled: false });
+        return;
+      }
+      set({ voiceEnabled: true, voiceMuted: false });
+      get().showToast('Voice chat active (P2P). Click Mic to mute anytime.');
+    },
+
+    toggleVoiceMute: () => {
+      if (!voiceManager.isActive()) return;
+      const muted = voiceManager.toggleMute();
+      set({ voiceMuted: muted });
     },
 
     joinPublicQueue: (preferredPlayers) => {

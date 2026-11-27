@@ -202,9 +202,14 @@ export const ProfileView: React.FC = () => {
             </div>
             <p className="mt-2 text-xs leading-relaxed text-[#E7E2D8]/75">
               {profile.isGuest
-                ? 'Guest stats and victories are preserved locally. Connect a Supabase account to sync match records across multiple devices.'
-                : 'Supabase PostgreSQL cloud sync active. Match records and statistics are backed up securely.'}
+                ? 'Guest Mode saves stay private on your device for 30 days. Sign in to unlock:'
+                : 'Supabase PostgreSQL cloud sync active. Your verified Commander benefits:'}
             </p>
+            <ul className="mt-2 space-y-1 text-[11px] text-[#E7E2D8]/70">
+              <li>• Global Royal Leaderboard ranking (Wins & Captures)</li>
+              <li>• Cross-device sync for Avatar, Hero & Match Stats</li>
+              <li>• Verified Commander badge in online multiplayer</li>
+            </ul>
           </div>
 
           <div className="mt-5 space-y-4">

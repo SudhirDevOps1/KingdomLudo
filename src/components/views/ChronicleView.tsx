@@ -1,9 +1,21 @@
-import React from 'react';
-import { Award, BarChart3, Clock, Shield } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Award, BarChart3, Clock, Crown, Shield, Trophy } from 'lucide-react';
 import { APP_CONFIG } from '../../config/appConfig';
 import { ACHIEVEMENTS } from '../../data/achievements';
-import { CHARACTERS } from '../../data/characters';
+import { CHARACTERS, getCharacterById } from '../../data/characters';
+import { getSupabaseClient, isSupabaseConfigured } from '../../services/supabase/supabaseClient';
 import { useGameStore, type ChronicleTab } from '../../store/gameStore';
+
+interface LeaderboardEntry {
+  user_id: string;
+  wins: number;
+  matches_played: number;
+  captures: number;
+  profiles?: {
+    display_name: string;
+    selected_character_id: string;
+  } | null;
+}
 
 export const ChronicleView: React.FC = () => {
   const chronicleTab = useGameStore((s) => s.chronicleTab);
@@ -14,10 +26,36 @@ export const ChronicleView: React.FC = () => {
 
   const tabs: Array<{ id: ChronicleTab; label: string; icon: React.ComponentType<{ className?: string }> }> = [
     { id: 'history', label: 'Match History', icon: Clock },
+    { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     { id: 'stats', label: 'Statistics', icon: BarChart3 },
     { id: 'achievements', label: 'Achievements', icon: Award },
     { id: 'collection', label: 'Character Collection', icon: Shield },
   ];
+
+  const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
+  const [leadersLoading, setLeadersLoading] = useState(false);
+
+  useEffect(() => {
+    if (chronicleTab !== 'leaderboard' || !isSupabaseConfigured()) return;
+    const supabase = getSupabaseClient();
+    if (!supabase) return;
+    setLeadersLoading(true);
+    void Promise.resolve(
+      supabase
+        .from('player_statistics')
+        .select('user_id, wins, matches_played, captures, profiles(display_name, selected_character_id)')
+        .order('wins', { ascending: false })
+        .order('captures', { ascending: false })
+        .limit(25),
+    )
+      .then(({ data }) => {
+        if (Array.isArray(data)) {
+          setLeaders(data as unknown as LeaderboardEntry[]);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLeadersLoading(false));
+  }, [chronicleTab]);
 
   const winRate =
     profile.stats.matchesPlayed > 0
@@ -58,6 +96,77 @@ export const ChronicleView: React.FC = () => {
           })}
         </div>
       </div>
+
+      {chronicleTab === 'leaderboard' && (
+        <section className="space-y-4 rounded-2xl border border-[#E7E2D8]/12 bg-[#1A2130] p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-display text-lg font-bold text-[#E6A93C]">
+                Global Royal Leaderboard (Verified Accounts)
+              </h2>
+              <p className="text-xs text-[#E7E2D8]/70">
+                Only signed-in Commanders are ranked globally. Guest Mode saves remain private on your device.
+              </p>
+            </div>
+            {profile.isGuest && (
+              <button
+                type="button"
+                onClick={() => navigate('profile')}
+                className="min-h-[38px] rounded-lg bg-[#E6A93C] px-4 text-xs font-bold text-[#10141E] transition hover:bg-[#D97706]"
+              >
+                Sign In to Compete
+              </button>
+            )}
+          </div>
+
+          {leadersLoading ? (
+            <p className="py-6 text-center text-xs text-[#E7E2D8]/65">Loading rankings...</p>
+          ) : leaders.length === 0 ? (
+            <div className="rounded-xl border border-[#E7E2D8]/10 bg-[#10141E] py-8 text-center text-xs text-[#E7E2D8]/70">
+              No ranked matches synced yet. Sign in and win a match to claim #1 on the leaderboard!
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {leaders.map((entry, idx) => {
+                const hero = getCharacterById(entry.profiles?.selected_character_id || 'ignis-drake');
+                const winPct =
+                  entry.matches_played > 0 ? Math.round((entry.wins / entry.matches_played) * 100) : 0;
+                return (
+                  <div
+                    key={entry.user_id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#E7E2D8]/10 bg-[#10141E] px-4 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`flex h-7 w-7 items-center justify-center rounded-lg font-mono-num text-xs font-bold ${
+                          idx === 0
+                            ? 'bg-[#E6A93C] text-[#10141E]'
+                            : idx < 3
+                              ? 'bg-[#E6A93C]/20 text-[#E6A93C]'
+                              : 'bg-[#1A2130] text-[#E7E2D8]/70'
+                        }`}
+                      >
+                        {idx === 0 ? <Crown className="h-4 w-4" /> : `#${idx + 1}`}
+                      </span>
+                      <div>
+                        <div className="font-display text-sm font-bold text-[#E7E2D8]">
+                          {entry.profiles?.display_name || 'Verified Commander'}
+                        </div>
+                        <div className="text-[11px] text-[#E6A93C]">{hero.name}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 font-mono-num text-xs">
+                      <span className="text-[#4ADE80] font-bold">{entry.wins}W</span>
+                      <span className="text-[#E7E2D8]/70">{winPct}%</span>
+                      <span className="text-[#E7E2D8]/70">{entry.captures} Captures</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
 
       {chronicleTab === 'history' && (
         <section className="rounded-2xl border border-[#E7E2D8]/12 bg-[#1A2130] p-6">

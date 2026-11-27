@@ -16,6 +16,7 @@ export interface RoomSeatSummary {
 
 export interface RoomSnapshot {
   roomCode: string;
+  roomName?: string;
   hostClientId: string;
   boardThemeId: string;
   maxPlayers: 2 | 3 | 4;
@@ -26,10 +27,20 @@ export interface RoomSnapshot {
   turnDeadlineAt: number | null;
 }
 
+export interface ChatMessageItem {
+  id: string;
+  senderClientId: string;
+  senderName: string;
+  senderColor: KingdomColor;
+  text: string;
+  sentAt: number;
+}
+
 export type ClientToServerMessage =
   | {
       type: 'room:create';
       roomCode?: string;
+      roomName?: string;
       clientId: string;
       playerName: string;
       userId?: string;
@@ -106,6 +117,20 @@ export type ClientToServerMessage =
   | {
       type: 'queue:leave';
       clientId: string;
+    }
+  | {
+      type: 'chat:send';
+      roomCode: string;
+      clientId: string;
+      text: string;
+    }
+  | {
+      type: 'voice:signal';
+      roomCode: string;
+      fromClientId: string;
+      toClientId: string;
+      signalType: 'offer' | 'answer' | 'ice' | 'join' | 'leave';
+      payload?: unknown;
     };
 
 export type ServerToClientMessage =
@@ -132,6 +157,17 @@ export type ServerToClientMessage =
       room: RoomSnapshot;
       diceValue?: number;
       seatIndex?: number;
+    }
+  | {
+      type: 'chat:message';
+      message: ChatMessageItem;
+    }
+  | {
+      type: 'voice:signal';
+      fromClientId: string;
+      toClientId: string;
+      signalType: 'offer' | 'answer' | 'ice' | 'join' | 'leave';
+      payload?: unknown;
     }
   | {
       type: 'error';
