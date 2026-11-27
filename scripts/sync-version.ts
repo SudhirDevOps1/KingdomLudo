@@ -110,9 +110,9 @@ export function syncAllVersions(explicitVersion?: string) {
  * AUTO-GENERATED FILE — DO NOT EDIT MANUALLY.
  * Synchronized across the entire repository via: pnpm run version:sync
  */
-export const APP_VERSION = '${cleanVersion}';
+export const APP_VERSION = '${cleanVersion}'; // x-release-please-version
 export const APP_RELEASE_CHANNEL = '${releaseChannel}';
-export const APP_RELEASE_TAG = '${releaseTag}';
+export const APP_RELEASE_TAG = '${releaseTag}'; // x-release-please-version
 export const ANDROID_VERSION_CODE = ${androidVersionCode};
 export const BUILD_TIMESTAMP = '${timestamp}';
 `;
