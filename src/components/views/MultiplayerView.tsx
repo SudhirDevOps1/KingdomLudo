@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Check, Copy, Globe, KeyRound, Play, Users, Wifi, WifiOff } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Crown, Globe, KeyRound, Play, Swords, Users, Wifi, WifiOff } from 'lucide-react';
 import { APP_CONFIG } from '../../config/appConfig';
 import { CHARACTERS, getCharacterById } from '../../data/characters';
 import { RULE_PRESETS } from '../../engine/ludoEngine';
@@ -297,8 +297,18 @@ export const MultiplayerView: React.FC = () => {
                   <p className="text-xs text-[#E6A93C]">
                     {char.name} ({kMeta.name})
                   </p>
-                  <p className="mt-2 text-[11px] text-[#E7E2D8]/60">
-                    {seat.clientId === onlineRoom.hostClientId ? 'Room Host 👑' : 'Challenger ⚔️'}
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-[#E7E2D8]/60">
+                    {seat.clientId === onlineRoom.hostClientId ? (
+                      <>
+                        <Crown className="h-3.5 w-3.5 text-[#E6A93C]" />
+                        <span>Room Host</span>
+                      </>
+                    ) : (
+                      <>
+                        <Swords className="h-3.5 w-3.5 text-purple-400" />
+                        <span>Challenger</span>
+                      </>
+                    )}
                   </p>
                 </div>
               );

@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
-import { Cloud, KeyRound, LogIn, LogOut, Mail, Save, ShieldCheck, Sparkles, UserPlus } from 'lucide-react';
-import { APP_CONFIG } from '../../config/appConfig';
+import React, { useMemo, useState } from 'react';
+import { Cloud, KeyRound, Lock, LogIn, LogOut, Mail, RefreshCw, Save, ShieldCheck, Shuffle, Sparkles, UserPlus } from 'lucide-react';
 import { getCharacterById } from '../../data/characters';
+import {
+  createRandomAvatarSeed,
+  DICEBEAR_STYLES,
+  generateDiceBearAvatarUri,
+  type DiceBearStyleId,
+} from '../../services/avatar/dicebearService';
 import { useGameStore } from '../../store/gameStore';
 import { AltchaWidget } from '../common/AltchaWidget';
 
@@ -10,21 +15,29 @@ export const ProfileView: React.FC = () => {
   const guestSession = useGameStore((s) => s.guestSession);
   const supabaseReady = useGameStore((s) => s.supabaseReady);
   const authBusy = useGameStore((s) => s.authBusy);
+  const authError = useGameStore((s) => s.authError);
   const updateDisplayName = useGameStore((s) => s.updateDisplayName);
+  const updateAvatar = useGameStore((s) => s.updateAvatar);
   const signInGoogle = useGameStore((s) => s.signInGoogle);
   const signInEmail = useGameStore((s) => s.signInEmail);
   const signUpEmail = useGameStore((s) => s.signUpEmail);
+  const resendEmailConfirmation = useGameStore((s) => s.resendEmailConfirmation);
   const signOutGoogle = useGameStore((s) => s.signOutGoogle);
   const showToast = useGameStore((s) => s.showToast);
 
   const [nameInput, setNameInput] = useState(profile.displayName);
+  const [avatarStyle, setAvatarStyle] = useState<DiceBearStyleId>(profile.avatarStyle ?? 'adventurer');
+  const [avatarSeed, setAvatarSeed] = useState<string>(profile.avatarSeed ?? profile.displayName ?? 'Royal Commander');
   const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [altchaToken, setAltchaToken] = useState<string | null>(null);
 
   const hero = getCharacterById(profile.selectedCharacterId);
-  const kMeta = APP_CONFIG.kingdoms[hero.kingdom];
+  const avatarUri = useMemo(
+    () => generateDiceBearAvatarUri(avatarStyle, avatarSeed, 128),
+    [avatarStyle, avatarSeed],
+  );
 
   const handleSaveName = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,9 +78,9 @@ export const ProfileView: React.FC = () => {
         <div className="space-y-5 rounded-2xl border border-[#E7E2D8]/12 bg-[#1A2130] p-6 shadow-xl">
           <div className="flex items-center gap-4">
             <img
-              src={kMeta.crestUrl}
-              alt={kMeta.name}
-              className="h-16 w-16 rounded-xl border border-[#E6A93C]/45 object-cover"
+              src={avatarUri}
+              alt={`${profile.displayName} Avatar`}
+              className="h-16 w-16 rounded-xl border border-[#E6A93C]/55 bg-[#10141E] object-cover"
             />
             <div>
               <div className="flex items-center gap-2">
@@ -116,6 +129,62 @@ export const ProfileView: React.FC = () => {
               </button>
             </div>
           </form>
+
+          <div className="space-y-3 rounded-xl border border-[#E7E2D8]/10 bg-[#10141E] p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#E6A93C]">
+                DiceBear Avatar Studio
+              </span>
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#4ADE80]">
+                <Lock className="h-3 w-3" />
+                <span>AES-256 Encrypted</span>
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {DICEBEAR_STYLES.map((st) => (
+                <button
+                  key={st.id}
+                  type="button"
+                  onClick={() => {
+                    setAvatarStyle(st.id);
+                    void updateAvatar(st.id, avatarSeed);
+                  }}
+                  className={`rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${
+                    avatarStyle === st.id
+                      ? 'border-[#E6A93C] bg-[#E6A93C]/20 text-[#E6A93C]'
+                      : 'border-[#E7E2D8]/15 bg-[#1A2130] text-[#E7E2D8]/75 hover:border-[#E6A93C]/40'
+                  }`}
+                >
+                  {st.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                maxLength={32}
+                value={avatarSeed}
+                onChange={(e) => setAvatarSeed(e.target.value)}
+                onBlur={() => void updateAvatar(avatarStyle, avatarSeed)}
+                placeholder="Custom avatar seed..."
+                className="min-h-[36px] flex-1 rounded-lg border border-[#E7E2D8]/15 bg-[#1A2130] px-3 text-xs text-[#E7E2D8] focus:border-[#E6A93C] focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const nextSeed = createRandomAvatarSeed();
+                  setAvatarSeed(nextSeed);
+                  void updateAvatar(avatarStyle, nextSeed);
+                }}
+                className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-[#E6A93C]/45 bg-[#1A2130] px-3 text-xs font-semibold text-[#E6A93C] transition hover:bg-[#E6A93C]/15"
+              >
+                <Shuffle className="h-3.5 w-3.5" />
+                <span>Randomize</span>
+              </button>
+            </div>
+          </div>
 
           <div className="rounded-xl border border-[#E7E2D8]/10 bg-[#10141E] p-4 text-xs text-[#E7E2D8]/80">
             Active Champion: <strong className="text-[#E6A93C]">{hero.name}</strong> ({hero.title})
@@ -189,6 +258,20 @@ export const ProfileView: React.FC = () => {
                       onVerify={(token) => setAltchaToken(token)}
                       onError={(msg) => showToast(msg)}
                     />
+                    {authError && authError.toLowerCase().includes('confirm') && (
+                      <div className="rounded-lg border border-[#D97706]/40 bg-[#D97706]/10 p-2.5 text-[11px] text-[#FBBF24]">
+                        <p>Your email is not confirmed yet. Check your inbox/spam, or resend the link:</p>
+                        <button
+                          type="button"
+                          disabled={authBusy}
+                          onClick={() => void resendEmailConfirmation(emailInput)}
+                          className="mt-1.5 inline-flex items-center gap-1 font-bold text-[#E6A93C] underline hover:text-[#FDE047]"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                          <span>Resend Confirmation Email</span>
+                        </button>
+                      </div>
+                    )}
                     <button
                       type="submit"
                       disabled={authBusy}

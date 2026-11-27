@@ -4,6 +4,8 @@ import { APP_CONFIG } from '../config/appConfig';
 import type { SupportedLanguage } from '../data/i18n';
 import type { KingdomColor, MatchState } from '../engine/types';
 import type { GraphicsQuality } from '../three/boardScene';
+import type { DiceBearStyleId } from '../services/avatar/dicebearService';
+import { decryptVaultData, encryptVaultData, hashSha256Hex } from './cryptoVault';
 
 export interface StoredMatchHistoryItem {
   matchId: string;
@@ -29,6 +31,8 @@ export interface StoredProfile {
   uid?: string;
   displayName: string;
   email?: string | null;
+  avatarStyle?: DiceBearStyleId;
+  avatarSeed?: string;
   selectedCharacterId: string;
   equippedCustomizations: Record<string, { outfitId: string; skinId: string }>;
   stats: {
@@ -64,6 +68,7 @@ export interface BackupDataPayload {
   format: 'kingdomludo_backup';
   version: string;
   exportedAt: number;
+  integrityHash?: string;
   profile: StoredProfile | null;
   settings: StoredSettings | null;
   history: StoredMatchHistoryItem[];
@@ -108,50 +113,21 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
     });
   }
 
-  private lsEncrypt(text: string): string {
-    try {
-      const encoded = encodeURIComponent(text);
-      let out = '';
-      for (let i = 0; i < encoded.length; i++) {
-        out += String.fromCharCode(encoded.charCodeAt(i) ^ 0x5b);
-      }
-      return 'enc:' + btoa(out);
-    } catch {
-      return text;
-    }
-  }
-
-  private lsDecrypt(raw: string): string {
-    try {
-      if (raw.startsWith('enc:')) {
-        const decoded = atob(raw.slice(4));
-        let out = '';
-        for (let i = 0; i < decoded.length; i++) {
-          out += String.fromCharCode(decoded.charCodeAt(i) ^ 0x5b);
-        }
-        return decodeURIComponent(out);
-      }
-      return raw;
-    } catch {
-      return raw;
-    }
-  }
-
-  private lsGet<T>(key: string): T | null {
+  private async lsGet<T>(key: string): Promise<T | null> {
     try {
       const raw = localStorage.getItem(key);
       if (!raw) return null;
-      const decrypted = this.lsDecrypt(raw);
+      const decrypted = await decryptVaultData(raw);
       return JSON.parse(decrypted) as T;
     } catch {
       return null;
     }
   }
 
-  private lsSet(key: string, val: unknown): void {
+  private async lsSet(key: string, val: unknown): Promise<void> {
     try {
       const serialized = JSON.stringify(val);
-      const encrypted = this.lsEncrypt(serialized);
+      const encrypted = await encryptVaultData(serialized);
       localStorage.setItem(key, encrypted);
     } catch {
       // Ignore storage quota exceptions
@@ -161,7 +137,7 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
   public async saveActiveMatch(match: MatchState): Promise<void> {
     await this.init();
     if (!this.db) {
-      this.lsSet('ck_active_match', match);
+      await this.lsSet('ck_active_match', match);
       return;
     }
     await this.db.put('kv', match, 'active_match');
@@ -195,11 +171,11 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
       expiresAt: item.expiresAt ?? Date.now() + RETENTION_30_DAYS_MS,
     };
     if (!this.db) {
-      const existing = this.lsGet<StoredMatchHistoryItem[]>('ck_history') ?? [];
+      const existing = (await this.lsGet<StoredMatchHistoryItem[]>('ck_history')) ?? [];
       const now = Date.now();
       const validExisting = existing.filter((x) => x.matchId !== withTtl.matchId && (!x.expiresAt || x.expiresAt > now));
       const next = [withTtl, ...validExisting].slice(0, 50);
-      this.lsSet('ck_history', next);
+      await this.lsSet('ck_history', next);
       return;
     }
     await this.db.put('match_history', withTtl);
@@ -209,7 +185,7 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
     await this.init();
     const now = Date.now();
     if (!this.db) {
-      const items = this.lsGet<StoredMatchHistoryItem[]>('ck_history') ?? [];
+      const items = (await this.lsGet<StoredMatchHistoryItem[]>('ck_history')) ?? [];
       return items.filter((x) => !x.expiresAt || x.expiresAt > now).slice(0, limit);
     }
     const all = (await this.db.getAll('match_history')) as StoredMatchHistoryItem[];
@@ -224,7 +200,7 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
     if (!this.db) {
       // Security: Strip PII and account identity fields (email, uid) before saving to localStorage fallback
       const { email: _email, uid: _uid, ...safeProfile } = profile;
-      this.lsSet('ck_profile', safeProfile);
+      await this.lsSet('ck_profile', safeProfile);
       return;
     }
     await this.db.put('kv', profile, 'profile');
@@ -241,7 +217,7 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
   public async saveSettings(settings: StoredSettings): Promise<void> {
     await this.init();
     if (!this.db) {
-      this.lsSet('ck_settings', settings);
+      await this.lsSet('ck_settings', settings);
       return;
     }
     await this.db.put('kv', settings, 'settings');
@@ -268,14 +244,19 @@ export class IndexedDBPersistence implements LocalPersistenceAdapter {
       ? (({ email: _email, uid: _uid, ...rest }) => rest)(profile)
       : null;
 
-    const backup: BackupDataPayload = {
-      format: 'kingdomludo_backup',
+    const corePayload = {
+      format: 'kingdomludo_backup' as const,
       version: APP_CONFIG.version,
       exportedAt: Date.now(),
       profile: sanitizedProfile as StoredProfile | null,
       settings,
       history,
       activeMatch,
+    };
+    const integrityHash = await hashSha256Hex(JSON.stringify(corePayload));
+    const backup: BackupDataPayload = {
+      ...corePayload,
+      integrityHash,
     };
     return JSON.stringify(backup, null, 2);
   }

@@ -152,6 +152,20 @@ export async function signInWithEmail(
   };
 }
 
+export async function resendConfirmationEmail(
+  email: string,
+): Promise<{ error: Error | null }> {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { error: new Error('Supabase is not configured.') };
+  }
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email: email.trim(),
+  });
+  return { error: error ? new Error(error.message) : null };
+}
+
 export async function signInWithGoogle(): Promise<{ url: string | null; error: Error | null }> {
   const supabase = getSupabaseClient();
   if (!supabase) {

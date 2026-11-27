@@ -25,11 +25,14 @@ import {
   type StoredProfile,
   type StoredSettings,
 } from '../persistence/localPersistence';
+import { runDataMigrations } from '../persistence/migrations';
+import type { DiceBearStyleId } from '../services/avatar/dicebearService';
 import { triggerHapticImpact } from '../platform/capacitorBridge';
 import {
   getCurrentSupabaseUser,
   getOrCreateGuestSession,
   onSupabaseAuthStateChange,
+  resendConfirmationEmail,
   signInWithEmail,
   signInWithGoogle,
   signOutSupabase,
@@ -103,6 +106,8 @@ const DEFAULT_PROFILE: StoredProfile = {
   isGuest: true,
   displayName: 'Royal Commander',
   email: null,
+  avatarStyle: 'adventurer',
+  avatarSeed: 'Royal Commander',
   selectedCharacterId: 'ignis-drake',
   equippedCustomizations: {
     'ignis-drake': { outfitId: 'royal-guard', skinId: 'classic' },
@@ -192,10 +197,12 @@ interface GameStore {
 
   // Profile & Auth
   updateDisplayName: (name: string) => Promise<void>;
+  updateAvatar: (style: DiceBearStyleId, seed: string) => Promise<void>;
   equipCharacter: (characterId: string, outfitId: string, skinId: string) => Promise<void>;
   signInGoogle: () => Promise<void>;
   signInEmail: (email: string, pass: string) => Promise<boolean>;
   signUpEmail: (email: string, pass: string, displayName: string) => Promise<boolean>;
+  resendEmailConfirmation: (email: string) => Promise<boolean>;
   signOutGoogle: () => Promise<void>;
   deleteAccount: () => Promise<void>;
   resetLocalData: () => Promise<void>;
@@ -450,6 +457,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     bootstrap: async () => {
       if (get().initialized) return;
+      await runDataMigrations();
       await localPersistence.init();
 
       const guest = getOrCreateGuestSession();
@@ -640,6 +648,18 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     },
 
+    updateAvatar: async (style, seed) => {
+      const cleanSeed = seed.trim().slice(0, 48) || get().profile.displayName || 'Royal Commander';
+      const next: StoredProfile = {
+        ...get().profile,
+        avatarStyle: style,
+        avatarSeed: cleanSeed,
+      };
+      await localPersistence.saveProfile(next);
+      set({ profile: next });
+      get().showToast('Avatar updated & encrypted locally.');
+    },
+
     equipCharacter: async (characterId, outfitId, skinId) => {
       const char = getCharacterById(characterId);
       const curr = get().profile;
@@ -796,6 +816,23 @@ export const useGameStore = create<GameStore>((set, get) => {
         get().showToast(message);
         return false;
       }
+    },
+
+    resendEmailConfirmation: async (email: string): Promise<boolean> => {
+      const cleanEmail = email.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+        get().showToast('Enter your registered email address first.');
+        return false;
+      }
+      set({ authBusy: true });
+      const { error } = await resendConfirmationEmail(cleanEmail);
+      set({ authBusy: false });
+      if (error) {
+        get().showToast(error.message);
+        return false;
+      }
+      get().showToast(`Confirmation email sent to ${cleanEmail}! Check inbox/spam.`);
+      return true;
     },
 
     signOutGoogle: async () => {

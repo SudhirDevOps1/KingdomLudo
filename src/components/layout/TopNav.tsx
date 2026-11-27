@@ -1,7 +1,8 @@
 import React from 'react';
-import { HelpCircle, User } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import { APP_CONFIG } from '../../config/appConfig';
 import { getTranslations } from '../../data/i18n';
+import { generateDiceBearAvatarUri } from '../../services/avatar/dicebearService';
 import { useGameStore, type AppScreen } from '../../store/gameStore';
 import { PWAInstallButton } from '../pwa/PWAInstallButton';
 
@@ -88,7 +89,11 @@ export const TopNav: React.FC = () => {
                 : 'border-[#E7E2D8]/15 bg-[#1A2130] text-[#E7E2D8] hover:border-[#E6A93C]/45'
             }`}
           >
-            <User className="h-4 w-4 text-[#E6A93C]" />
+            <img
+              src={generateDiceBearAvatarUri(profile.avatarStyle ?? 'adventurer', profile.avatarSeed ?? profile.displayName, 40)}
+              alt={profile.displayName}
+              className="h-5 w-5 rounded-full border border-[#E6A93C]/50 bg-[#10141E]"
+            />
             <span className="max-w-[110px] truncate">{profile.displayName}</span>
           </button>
           <button

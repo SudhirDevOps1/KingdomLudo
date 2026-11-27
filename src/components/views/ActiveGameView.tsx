@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Bot,
   Camera,
   ChevronDown,
   ChevronUp,
@@ -18,6 +19,7 @@ import {
   Play,
   RotateCcw,
   Sparkles,
+  Swords,
   Unlock,
   ZoomIn,
   ZoomOut,
@@ -313,11 +315,22 @@ export const ActiveGameView: React.FC = () => {
                     : 'bg-blue-500/20 text-blue-300'
                 }`}
               >
-                {isLocalHuman
-                  ? '👑 YOUR TURN'
-                  : isRemoteHuman
-                  ? '⚔️ RIVAL TURN'
-                  : '🤖 BOT THINKING'}
+                {isLocalHuman ? (
+                  <span className="inline-flex items-center justify-center gap-1">
+                    <Crown className="h-3 w-3" />
+                    <span>YOUR TURN</span>
+                  </span>
+                ) : isRemoteHuman ? (
+                  <span className="inline-flex items-center justify-center gap-1">
+                    <Swords className="h-3 w-3" />
+                    <span>RIVAL TURN</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center justify-center gap-1">
+                    <Bot className="h-3 w-3" />
+                    <span>BOT THINKING</span>
+                  </span>
+                )}
               </div>
             )}
 
@@ -362,7 +375,7 @@ export const ActiveGameView: React.FC = () => {
                   )
                 ) : (
                   <div className="flex items-center gap-1 rounded-lg border border-[#E6A93C]/60 bg-[#10141E] px-2 py-0.5 font-mono-num text-xs font-bold text-[#E6A93C]">
-                    <span>🎲</span>
+                    <Dice6 className="h-3.5 w-3.5" />
                     <span>{match.currentDice ?? '—'}</span>
                   </div>
                 )
@@ -633,8 +646,16 @@ export const ActiveGameView: React.FC = () => {
                   className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl border border-[#E6A93C]/60 bg-[#1A2130] px-4 text-xs font-bold text-[#E7E2D8] transition hover:border-[#E6A93C] hover:bg-[#E6A93C] hover:text-[#10141E]"
                 >
                   <span>Hero #{mv.pieceIndex + 1}</span>
-                  {mv.capturedPieces.length > 0 && <span className="text-amber-400 font-extrabold">(⚔️ Capture!)</span>}
-                  {mv.reachesHome && <span className="text-yellow-400 font-extrabold">(👑 Crown!)</span>}
+                  {mv.capturedPieces.length > 0 && (
+                    <span className="inline-flex items-center gap-1 font-extrabold text-amber-400">
+                      (<Swords className="h-3 w-3" /> Capture!)
+                    </span>
+                  )}
+                  {mv.reachesHome && (
+                    <span className="inline-flex items-center gap-1 font-extrabold text-yellow-400">
+                      (<Crown className="h-3 w-3" /> Crown!)
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

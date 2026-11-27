@@ -56,7 +56,7 @@ describe('React UI & Fallback Board Components', () => {
     expect(screen.getByText(/\[COMPUTER\] \[EASY AI\]/i)).toBeInTheDocument();
 
     // Verify active turn banner and corner ROLL button
-    expect(screen.getByText(/👑 YOUR TURN/i)).toBeInTheDocument();
+    expect(screen.getByText(/YOUR TURN/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /ROLL/i })).toBeInTheDocument();
   });
 
