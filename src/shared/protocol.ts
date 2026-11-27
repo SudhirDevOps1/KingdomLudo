@@ -29,6 +29,7 @@ export interface RoomSnapshot {
 export type ClientToServerMessage =
   | {
       type: 'room:create';
+      roomCode?: string;
       clientId: string;
       playerName: string;
       userId?: string;
@@ -38,6 +39,15 @@ export type ClientToServerMessage =
       boardThemeId: string;
       maxPlayers: 2 | 3 | 4;
       rules: RuleConfig;
+    }
+  | {
+      type: 'room:update_profile';
+      roomCode: string;
+      clientId: string;
+      playerName: string;
+      characterId: string;
+      outfitId: string;
+      skinId: string;
     }
   | {
       type: 'room:join';
@@ -113,6 +123,8 @@ export type ServerToClientMessage =
   | {
       type: 'queue:matched';
       roomCode: string;
+      isHost?: boolean;
+      preferredPlayers?: 2 | 4;
     }
   | {
       type: 'match:event';

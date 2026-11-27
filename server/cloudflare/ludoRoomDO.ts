@@ -33,11 +33,33 @@ interface StoredRoomState {
   turnDeadlineAt: number | null;
 }
 
+interface QueueEntry {
+  clientId: string;
+  preferredPlayers: 2 | 4;
+  ws: WebSocket;
+  joinedAt: number;
+}
+
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+function generateRoomCode(): string {
+  const bytes = new Uint8Array(6);
+  crypto.getRandomValues(bytes);
+  let code = '';
+  for (let i = 0; i < 6; i += 1) {
+    code += CODE_ALPHABET[bytes[i] % CODE_ALPHABET.length];
+  }
+  return code;
+}
+
 export class LudoRoomDO {
   private state: DurableObjectState;
   private env: Env;
   private room: StoredRoomState | null = null;
+  private cachedRoomCode: string | null = null;
   private clientSessions = new Map<WebSocket, { clientId: string; roomCode: string }>();
+  private socketRateLimits = new Map<WebSocket, { count: number; resetAt: number }>();
+  private matchmakingQueue: QueueEntry[] = [];
 
   constructor(state: DurableObjectState, env: Env) {
     this.state = state;
@@ -59,8 +81,23 @@ export class LudoRoomDO {
     }
   }
 
+  private async getRoomCode(): Promise<string> {
+    if (this.cachedRoomCode) return this.cachedRoomCode;
+    const stored = await this.state.storage.get<string>('room_code');
+    if (stored) {
+      this.cachedRoomCode = stored;
+      return stored;
+    }
+    return generateRoomCode();
+  }
+
   public async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
+    const paramCode = url.searchParams.get('roomCode')?.trim().toUpperCase();
+    if (paramCode) {
+      this.cachedRoomCode = paramCode;
+      await this.state.storage.put('room_code', paramCode);
+    }
 
     if (request.headers.get('Upgrade')?.toLowerCase() === 'websocket') {
       const pair = new WebSocketPair();
@@ -84,9 +121,40 @@ export class LudoRoomDO {
     return new Response('Not found', { status: 404 });
   }
 
+  private checkSocketRateLimit(ws: WebSocket): boolean {
+    const now = Date.now();
+    const bucket = this.socketRateLimits.get(ws);
+    if (!bucket || now > bucket.resetAt) {
+      this.socketRateLimits.set(ws, { count: 1, resetAt: now + 3000 });
+      return true;
+    }
+    if (bucket.count >= 25) {
+      return false;
+    }
+    bucket.count += 1;
+    return true;
+  }
+
   public async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
     try {
       const rawStr = typeof message === 'string' ? message : new TextDecoder().decode(message);
+      if (rawStr.length > 4096) {
+        this.sendToSocket(ws, {
+          type: 'error',
+          code: 'PAYLOAD_TOO_LARGE',
+          message: 'Payload exceeds maximum allowed size.',
+        });
+        return;
+      }
+      if (!this.checkSocketRateLimit(ws)) {
+        this.sendToSocket(ws, {
+          type: 'error',
+          code: 'RATE_LIMITED',
+          message: 'Too many actions. Please slow down.',
+        });
+        return;
+      }
+
       const msg = JSON.parse(rawStr) as ClientToServerMessage;
       await this.handleClientMessage(ws, msg);
     } catch (err) {
@@ -99,6 +167,9 @@ export class LudoRoomDO {
   }
 
   public async webSocketClose(ws: WebSocket): Promise<void> {
+    this.socketRateLimits.delete(ws);
+    this.matchmakingQueue = this.matchmakingQueue.filter((q) => q.ws !== ws);
+
     const session = this.clientSessions.get(ws);
     if (!session || !this.room) return;
 
@@ -116,6 +187,8 @@ export class LudoRoomDO {
 
   public webSocketError(ws: WebSocket, error: unknown): void {
     console.error('Durable Object WebSocket error:', error);
+    this.socketRateLimits.delete(ws);
+    this.matchmakingQueue = this.matchmakingQueue.filter((q) => q.ws !== ws);
     ws.close(1011, 'Internal Error');
   }
 
@@ -137,17 +210,94 @@ export class LudoRoomDO {
   }
 
   private async handleClientMessage(ws: WebSocket, msg: ClientToServerMessage): Promise<void> {
-    let room = await this.loadState();
+    const room = await this.loadState();
 
     switch (msg.type) {
+      case 'queue:join': {
+        this.matchmakingQueue = this.matchmakingQueue.filter(
+          (q) => q.clientId !== msg.clientId && q.ws !== ws,
+        );
+        this.matchmakingQueue.push({
+          clientId: msg.clientId,
+          preferredPlayers: msg.preferredPlayers,
+          ws,
+          joinedAt: Date.now(),
+        });
+
+        const matchingBucket = this.matchmakingQueue.filter(
+          (q) => q.preferredPlayers === msg.preferredPlayers,
+        );
+
+        if (matchingBucket.length >= msg.preferredPlayers) {
+          const selected = matchingBucket.slice(0, msg.preferredPlayers);
+          const selectedIds = new Set(selected.map((s) => s.clientId));
+          this.matchmakingQueue = this.matchmakingQueue.filter((q) => !selectedIds.has(q.clientId));
+
+          const matchedCode = generateRoomCode();
+          selected.forEach((entry, idx) => {
+            this.sendToSocket(entry.ws, {
+              type: 'queue:matched',
+              roomCode: matchedCode,
+              isHost: idx === 0,
+              preferredPlayers: msg.preferredPlayers,
+            });
+          });
+        } else {
+          matchingBucket.forEach((entry, idx) => {
+            this.sendToSocket(entry.ws, {
+              type: 'queue:status',
+              inQueue: true,
+              position: idx + 1,
+              preferredPlayers: msg.preferredPlayers,
+              queuedCount: matchingBucket.length,
+            });
+          });
+        }
+        break;
+      }
+
+      case 'queue:leave': {
+        this.matchmakingQueue = this.matchmakingQueue.filter(
+          (q) => q.clientId !== msg.clientId && q.ws !== ws,
+        );
+        this.sendToSocket(ws, {
+          type: 'queue:status',
+          inQueue: false,
+          position: 0,
+          preferredPlayers: 2,
+          queuedCount: 0,
+        });
+        break;
+      }
+
       case 'room:create': {
+        if (room && room.status !== 'finished' && room.seats.some((s) => s.clientId !== null && s.connected)) {
+          // If the same host is re-creating, return existing snapshot; otherwise reject collision
+          if (room.hostClientId === msg.clientId) {
+            this.clientSessions.set(ws, { clientId: msg.clientId, roomCode: room.roomCode });
+            this.sendToSocket(ws, { type: 'room:snapshot', room: this.createSnapshot() });
+            return;
+          }
+          this.sendToSocket(ws, {
+            type: 'error',
+            code: 'ROOM_EXISTS',
+            message: 'Room code already in use. Please try hosting again.',
+          });
+          return;
+        }
+
+        const resolvedCode = (msg.roomCode || (await this.getRoomCode())).trim().toUpperCase();
+        await this.state.storage.put('room_code', resolvedCode);
+        this.cachedRoomCode = resolvedCode;
+
         const defaultSeats = getSeatsForPlayerCount(msg.maxPlayers);
+        const hostName = (msg.playerName || '').trim().slice(0, 24) || 'Host Commander';
         const hostSeat: RoomSeatSummary = {
           seatIndex: 0,
           color: defaultSeats[0],
           clientId: msg.clientId,
           userId: msg.userId,
-          name: msg.playerName,
+          name: hostName,
           characterId: msg.characterId,
           outfitId: msg.outfitId,
           skinId: msg.skinId,
@@ -170,7 +320,7 @@ export class LudoRoomDO {
         }));
 
         this.room = {
-          roomCode: this.state.id.toString().slice(0, 6).toUpperCase(),
+          roomCode: resolvedCode,
           hostClientId: msg.clientId,
           boardThemeId: msg.boardThemeId,
           maxPlayers: msg.maxPlayers,
@@ -196,9 +346,21 @@ export class LudoRoomDO {
           this.sendToSocket(ws, {
             type: 'error',
             code: 'ROOM_NOT_FOUND',
-            message: 'Room not initialized.',
+            message: 'Room not found. Double-check the 6-character code.',
           });
           return;
+        }
+
+        if (room.status !== 'lobby') {
+          const existingSeat = room.seats.find((s) => s.clientId === msg.clientId);
+          if (!existingSeat) {
+            this.sendToSocket(ws, {
+              type: 'error',
+              code: 'MATCH_IN_PROGRESS',
+              message: 'This match has already started.',
+            });
+            return;
+          }
         }
 
         let seat = room.seats.find((s) => s.clientId === msg.clientId);
@@ -214,7 +376,9 @@ export class LudoRoomDO {
           }
           emptySeat.clientId = msg.clientId;
           emptySeat.userId = msg.userId;
-          let chosenName = (msg.playerName || '').trim().slice(0, 24) || `Challenger #${room.seats.filter((s) => s.clientId !== null).length + 1}`;
+          let chosenName =
+            (msg.playerName || '').trim().slice(0, 24) ||
+            `Challenger #${room.seats.filter((s) => s.clientId !== null).length + 1}`;
           const existingNames = room.seats
             .filter((s) => s.clientId !== null && s !== emptySeat)
             .map((s) => s.name.trim().toLowerCase());
@@ -241,6 +405,32 @@ export class LudoRoomDO {
         break;
       }
 
+      case 'room:update_profile': {
+        if (!room || room.status !== 'lobby') return;
+        const seat = room.seats.find((s) => s.clientId === msg.clientId);
+        if (!seat) return;
+
+        let chosenName = (msg.playerName || '').trim().slice(0, 24) || seat.name;
+        const existingNames = room.seats
+          .filter((s) => s.clientId !== null && s !== seat)
+          .map((s) => s.name.trim().toLowerCase());
+        if (existingNames.includes(chosenName.toLowerCase())) {
+          chosenName = `${chosenName} (${seat.seatIndex + 1})`;
+        }
+
+        seat.name = chosenName;
+        seat.characterId = msg.characterId;
+        seat.outfitId = msg.outfitId;
+        seat.skinId = msg.skinId;
+
+        await this.saveState();
+        this.broadcast({
+          type: 'room:snapshot',
+          room: this.createSnapshot(),
+        });
+        break;
+      }
+
       case 'room:ready': {
         if (!room) return;
         const seat = room.seats.find((s) => s.clientId === msg.clientId);
@@ -255,6 +445,45 @@ export class LudoRoomDO {
         break;
       }
 
+      case 'room:leave': {
+        if (!room) return;
+        const seat = room.seats.find((s) => s.clientId === msg.clientId);
+        if (!seat) return;
+
+        this.clientSessions.delete(ws);
+
+        if (room.status === 'lobby') {
+          seat.clientId = null;
+          seat.userId = undefined;
+          seat.name = `Slot ${seat.seatIndex + 1}`;
+          seat.ready = false;
+          seat.connected = false;
+          seat.isHost = false;
+
+          const remaining = room.seats.filter((s) => s.clientId !== null);
+          if (remaining.length === 0) {
+            this.room = null;
+            await this.state.storage.delete('room_data');
+            return;
+          }
+
+          if (room.hostClientId === msg.clientId) {
+            room.hostClientId = remaining[0].clientId!;
+            remaining[0].isHost = true;
+            remaining[0].ready = true;
+          }
+        } else {
+          seat.connected = false;
+        }
+
+        await this.saveState();
+        this.broadcast({
+          type: 'room:snapshot',
+          room: this.createSnapshot(),
+        });
+        break;
+      }
+
       case 'room:start': {
         if (!room || room.status !== 'lobby') return;
         if (room.hostClientId !== msg.clientId) {
@@ -266,17 +495,25 @@ export class LudoRoomDO {
           return;
         }
 
-        const seatSetup = room.seats
-          .filter((s) => s.clientId !== null)
-          .map((s) => ({
-            color: s.color,
-            name: s.name,
-            type: 'human' as const,
-            characterId: s.characterId,
-            outfitId: s.outfitId,
-            skinId: s.skinId,
-            userId: s.userId,
-          }));
+        const occupiedSeats = room.seats.filter((s) => s.clientId !== null);
+        if (occupiedSeats.length < 2) {
+          this.sendToSocket(ws, {
+            type: 'error',
+            code: 'NEED_PLAYERS',
+            message: 'At least 2 players must join before starting.',
+          });
+          return;
+        }
+
+        const seatSetup = occupiedSeats.map((s) => ({
+          color: s.color,
+          name: s.name,
+          type: 'human' as const,
+          characterId: s.characterId,
+          outfitId: s.outfitId,
+          skinId: s.skinId,
+          userId: s.userId,
+        }));
 
         room.matchState = createInitialMatchState({
           matchId: `m_${Date.now()}_${room.roomCode}`,
@@ -301,7 +538,7 @@ export class LudoRoomDO {
       case 'match:roll': {
         if (!room || room.status !== 'playing' || !room.matchState) return;
         const currentSeat = room.seats[room.matchState.activeSeatIndex];
-        if (currentSeat.clientId !== msg.clientId) {
+        if (!currentSeat || currentSeat.clientId !== msg.clientId) {
           this.sendToSocket(ws, {
             type: 'error',
             code: 'NOT_YOUR_TURN',
@@ -329,7 +566,7 @@ export class LudoRoomDO {
       case 'match:move': {
         if (!room || room.status !== 'playing' || !room.matchState) return;
         const currentSeat = room.seats[room.matchState.activeSeatIndex];
-        if (currentSeat.clientId !== msg.clientId) {
+        if (!currentSeat || currentSeat.clientId !== msg.clientId) {
           this.sendToSocket(ws, {
             type: 'error',
             code: 'NOT_YOUR_TURN',

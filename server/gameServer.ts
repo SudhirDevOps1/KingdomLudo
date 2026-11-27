@@ -180,6 +180,9 @@ export class AuthoritativeGameServer {
         case 'room:create':
           this.handleCreateRoom(conn, msg);
           break;
+        case 'room:update_profile':
+          this.handleUpdateProfile(msg);
+          break;
         case 'room:join':
           this.handleJoinRoom(conn, msg);
           break;
@@ -223,7 +226,10 @@ export class AuthoritativeGameServer {
     conn: ClientConn,
     msg: Extract<ClientToServerMessage, { type: 'room:create' }>,
   ): void {
-    let roomCode = generateInviteCode();
+    const requested = msg.roomCode?.trim().toUpperCase();
+    let roomCode = requested && /^[A-Z0-9]{4,12}$/.test(requested) && !this.rooms.has(requested)
+      ? requested
+      : generateInviteCode();
     while (this.rooms.has(roomCode)) {
       roomCode = generateInviteCode();
     }
@@ -325,6 +331,29 @@ export class AuthoritativeGameServer {
     const seat = room.seats.find((s) => s.clientId === msg.clientId);
     if (!seat) return;
     seat.ready = msg.ready;
+    this.broadcastRoom(room);
+  }
+
+  private handleUpdateProfile(
+    msg: Extract<ClientToServerMessage, { type: 'room:update_profile' }>,
+  ): void {
+    const room = this.rooms.get(msg.roomCode.toUpperCase());
+    if (!room || room.status !== 'lobby') return;
+    const seat = room.seats.find((s) => s.clientId === msg.clientId);
+    if (!seat) return;
+
+    let chosenName = sanitizeName(msg.playerName);
+    const existingNames = room.seats
+      .filter((s) => s.clientId !== null && s !== seat)
+      .map((s) => s.name.trim().toLowerCase());
+    if (existingNames.includes(chosenName.toLowerCase())) {
+      chosenName = `${chosenName} (${seat.seatIndex + 1})`;
+    }
+
+    seat.name = chosenName;
+    seat.characterId = msg.characterId;
+    seat.outfitId = msg.outfitId;
+    seat.skinId = msg.skinId;
     this.broadcastRoom(room);
   }
 

@@ -16,7 +16,6 @@ export const MultiplayerView: React.FC = () => {
   const queueStatus = useGameStore((s) => s.queueStatus);
   const pendingDeepLinkRoom = useGameStore((s) => s.pendingDeepLinkRoom);
   const setPendingDeepLinkRoom = useGameStore((s) => s.setPendingDeepLinkRoom);
-  const connectWebSocket = useGameStore((s) => s.connectWebSocket);
   const createPrivateRoom = useGameStore((s) => s.createPrivateRoom);
   const joinPrivateRoom = useGameStore((s) => s.joinPrivateRoom);
   const setRoomReady = useGameStore((s) => s.setRoomReady);
@@ -30,6 +29,7 @@ export const MultiplayerView: React.FC = () => {
   const [maxPlayers, setMaxPlayers] = useState<2 | 3 | 4>(4);
   const [joinCode, setJoinCode] = useState(pendingDeepLinkRoom ?? '');
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedOnlyCode, setCopiedOnlyCode] = useState(false);
   const [nameInput, setNameInput] = useState(profile.displayName || 'Royal Commander');
 
   useEffect(() => {
@@ -45,15 +45,22 @@ export const MultiplayerView: React.FC = () => {
   };
 
   useEffect(() => {
-    connectWebSocket();
-  }, [connectWebSocket]);
-
-  useEffect(() => {
     if (pendingDeepLinkRoom) {
       setJoinCode(pendingDeepLinkRoom);
       setPendingDeepLinkRoom(null);
     }
   }, [pendingDeepLinkRoom, setPendingDeepLinkRoom]);
+
+  const copyRoomCodeOnly = async (roomCode: string) => {
+    try {
+      await navigator.clipboard.writeText(roomCode);
+      setCopiedOnlyCode(true);
+      showToast(`Room code ${roomCode} copied!`);
+      setTimeout(() => setCopiedOnlyCode(false), 2000);
+    } catch {
+      showToast(`Room code: ${roomCode}`);
+    }
+  };
 
   const copyInviteLink = async (roomCode: string) => {
     const url = `${window.location.origin}/?room=${roomCode}`;
@@ -95,14 +102,17 @@ export const MultiplayerView: React.FC = () => {
           {wsConnected ? (
             <>
               <Wifi className="h-4 w-4 text-[#16A34A]" />
-              <span className="text-[#4ADE80]">Server Connected</span>
+              <span className="text-[#4ADE80]">Room Connected</span>
+            </>
+          ) : wsConnecting ? (
+            <>
+              <WifiOff className="h-4 w-4 text-[#D97706]" />
+              <span className="text-[#FBBF24]">Connecting...</span>
             </>
           ) : (
             <>
-              <WifiOff className="h-4 w-4 text-[#D97706]" />
-              <span className="text-[#FBBF24]">
-                {wsConnecting ? 'Connecting...' : 'Reconnecting...'}
-              </span>
+              <Wifi className="h-4 w-4 text-[#E7E2D8]/50" />
+              <span className="text-[#E7E2D8]/70">Ready (Idle)</span>
             </>
           )}
         </div>
@@ -173,10 +183,18 @@ export const MultiplayerView: React.FC = () => {
               <span className="text-xs font-semibold uppercase tracking-wider text-[#E6A93C]">
                 Private Courtyard Lobby
               </span>
-              <div className="mt-1 flex items-center gap-3">
+              <div className="mt-1 flex flex-wrap items-center gap-2.5">
                 <h2 className="font-mono-num text-3xl font-bold tracking-[0.2em] text-[#E7E2D8]">
                   {onlineRoom.roomCode}
                 </h2>
+                <button
+                  type="button"
+                  onClick={() => void copyRoomCodeOnly(onlineRoom.roomCode)}
+                  className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-[#E7E2D8]/20 bg-[#10141E] px-3 py-1.5 text-xs font-semibold text-[#E7E2D8] transition hover:border-[#E6A93C]"
+                >
+                  {copiedOnlyCode ? <Check className="h-3.5 w-3.5 text-[#4ADE80]" /> : <Copy className="h-3.5 w-3.5" />}
+                  <span>{copiedOnlyCode ? 'Copied Code' : 'Copy Code'}</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => void copyInviteLink(onlineRoom.roomCode)}
@@ -186,6 +204,11 @@ export const MultiplayerView: React.FC = () => {
                   <span>{copiedCode ? 'Copied Link' : 'Copy Invite Link'}</span>
                 </button>
               </div>
+              <p className="mt-2 text-xs text-[#E7E2D8]/65">
+                {isHost
+                  ? `Share code ${onlineRoom.roomCode} or the invite link with your friend. Once at least 2 players join, click Start Match.`
+                  : `Joined room ${onlineRoom.roomCode}. Waiting for the Room Host to click Start Match...`}
+              </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">

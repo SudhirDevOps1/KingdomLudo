@@ -218,7 +218,7 @@ interface GameStore {
   flushActiveMatchSave: () => Promise<void>;
 
   // Online Multiplayer
-  connectWebSocket: () => void;
+  connectWebSocket: (roomCode?: string) => void;
   disconnectWebSocket: () => void;
   createPrivateRoom: (maxPlayers: 2 | 3 | 4, rules: RuleConfig) => void;
   joinPrivateRoom: (roomCode: string) => void;
@@ -231,7 +231,28 @@ interface GameStore {
 }
 
 let wsInstance: WebSocket | null = null;
+let wsRoomCode: string | null = null;
+let pendingWsMessages: ClientToServerMessage[] = [];
+let lastAuthAttemptAt = 0;
 let aiTimeoutHandle: ReturnType<typeof setTimeout> | null = null;
+
+const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+function generateClientRoomCode(): string {
+  let code = '';
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    const bytes = new Uint8Array(6);
+    crypto.getRandomValues(bytes);
+    for (let i = 0; i < 6; i += 1) {
+      code += ROOM_CODE_ALPHABET[bytes[i] % ROOM_CODE_ALPHABET.length];
+    }
+    return code;
+  }
+  for (let i = 0; i < 6; i += 1) {
+    code += ROOM_CODE_ALPHABET[Math.floor(Math.random() * ROOM_CODE_ALPHABET.length)];
+  }
+  return code;
+}
 
 function clearAiTimer() {
   if (aiTimeoutHandle) {
@@ -241,16 +262,24 @@ function clearAiTimer() {
 }
 
 export const useGameStore = create<GameStore>((set, get) => {
-  const sendWs = (msg: ClientToServerMessage) => {
-    if (!wsInstance || wsInstance.readyState !== WebSocket.OPEN) {
-      get().connectWebSocket();
-      setTimeout(() => {
-        if (wsInstance && wsInstance.readyState === WebSocket.OPEN) {
-          wsInstance.send(JSON.stringify(msg));
-        } else {
-          get().showToast('Unable to reach multiplayer server. Check connection.');
-        }
-      }, 450);
+  const sendWs = (msg: ClientToServerMessage, targetRoomCode?: string) => {
+    const desiredRoom = targetRoomCode ?? wsRoomCode ?? undefined;
+    if (desiredRoom && wsRoomCode !== desiredRoom) {
+      pendingWsMessages = [msg];
+      get().connectWebSocket(desiredRoom);
+      return;
+    }
+    if (!wsInstance || wsInstance.readyState === WebSocket.CLOSED || wsInstance.readyState === WebSocket.CLOSING) {
+      if (!desiredRoom) {
+        get().showToast('Not connected to a multiplayer room.');
+        return;
+      }
+      pendingWsMessages.push(msg);
+      get().connectWebSocket(desiredRoom);
+      return;
+    }
+    if (wsInstance.readyState === WebSocket.CONNECTING) {
+      pendingWsMessages.push(msg);
       return;
     }
     wsInstance.send(JSON.stringify(msg));
@@ -443,10 +472,19 @@ export const useGameStore = create<GameStore>((set, get) => {
 
       const initialLegal =
         typeof window !== 'undefined' ? resolveLegalTabFromPath(window.location.pathname) : null;
+      const urlRoomParam =
+        typeof window !== 'undefined'
+          ? new URLSearchParams(window.location.search).get('room')?.trim().toUpperCase() || null
+          : null;
+      const validUrlRoom = urlRoomParam && /^[A-Z0-9]{4,12}$/.test(urlRoomParam) ? urlRoomParam : null;
 
       set({
         initialized: true,
-        ...(initialLegal ? { screen: 'legal' as AppScreen, legalTab: initialLegal } : {}),
+        ...(initialLegal
+          ? { screen: 'legal' as AppScreen, legalTab: initialLegal }
+          : validUrlRoom
+            ? { screen: 'multiplayer' as AppScreen, pendingDeepLinkRoom: validUrlRoom }
+            : {}),
         guestSession: guest,
         supabaseReady: isSupabaseConfigured(),
         profile,
@@ -569,6 +607,26 @@ export const useGameStore = create<GameStore>((set, get) => {
       updateGuestDisplayName(displayName);
       set({ profile: next });
 
+      const activeRoom = get().onlineRoom;
+      if (activeRoom && activeRoom.status === 'lobby') {
+        const eq = next.equippedCustomizations[next.selectedCharacterId] ?? {
+          outfitId: 'royal-guard',
+          skinId: 'classic',
+        };
+        sendWs(
+          {
+            type: 'room:update_profile',
+            roomCode: activeRoom.roomCode,
+            clientId: get().clientId,
+            playerName: displayName,
+            characterId: next.selectedCharacterId,
+            outfitId: eq.outfitId,
+            skinId: eq.skinId,
+          },
+          activeRoom.roomCode,
+        );
+      }
+
       if (!next.isGuest && next.uid && isSupabaseConfigured()) {
         const supabase = getSupabaseClient();
         if (supabase) {
@@ -605,6 +663,22 @@ export const useGameStore = create<GameStore>((set, get) => {
       });
       get().showToast(`Equipped ${char.name} (${char.title})`);
 
+      const activeRoom = get().onlineRoom;
+      if (activeRoom && activeRoom.status === 'lobby') {
+        sendWs(
+          {
+            type: 'room:update_profile',
+            roomCode: activeRoom.roomCode,
+            clientId: get().clientId,
+            playerName: next.displayName,
+            characterId: char.id,
+            outfitId,
+            skinId,
+          },
+          activeRoom.roomCode,
+        );
+      }
+
       if (!next.isGuest && next.uid && isSupabaseConfigured()) {
         const supabase = getSupabaseClient();
         if (supabase) {
@@ -619,6 +693,12 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
 
     signInGoogle: async () => {
+      const now = Date.now();
+      if (now - lastAuthAttemptAt < 3000) {
+        get().showToast('Please wait a few seconds before retrying sign-in.');
+        return;
+      }
+      lastAuthAttemptAt = now;
       set({ authBusy: true, authError: null });
       try {
         const { url, error } = await signInWithGoogle();
@@ -635,9 +715,22 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
 
     signInEmail: async (email: string, pass: string): Promise<boolean> => {
+      const cleanEmail = email.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || pass.length < 6) {
+        const msg = 'Enter a valid email and a password of at least 6 characters.';
+        set({ authError: msg });
+        get().showToast(msg);
+        return false;
+      }
+      const now = Date.now();
+      if (now - lastAuthAttemptAt < 3000) {
+        get().showToast('Please wait a few seconds before trying again.');
+        return false;
+      }
+      lastAuthAttemptAt = now;
       set({ authBusy: true, authError: null });
       try {
-        const { user, error } = await signInWithEmail(email, pass);
+        const { user, error } = await signInWithEmail(cleanEmail, pass);
         if (error) throw error;
         if (user) {
           const curr = get().profile;
@@ -664,9 +757,22 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
 
     signUpEmail: async (email: string, pass: string, displayName: string): Promise<boolean> => {
+      const cleanEmail = email.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || pass.length < 6) {
+        const msg = 'Enter a valid email and a password of at least 6 characters.';
+        set({ authError: msg });
+        get().showToast(msg);
+        return false;
+      }
+      const now = Date.now();
+      if (now - lastAuthAttemptAt < 3000) {
+        get().showToast('Please wait a few seconds before creating an account.');
+        return false;
+      }
+      lastAuthAttemptAt = now;
       set({ authBusy: true, authError: null });
       try {
-        const { user, error } = await signUpWithEmail(email, pass, displayName);
+        const { user, error } = await signUpWithEmail(cleanEmail, pass, displayName);
         if (error) throw error;
         if (user) {
           const curr = get().profile;
@@ -928,37 +1034,70 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     },
 
-    connectWebSocket: () => {
-      if (wsInstance && (wsInstance.readyState === WebSocket.OPEN || wsInstance.readyState === WebSocket.CONNECTING)) {
+    connectWebSocket: (roomCode) => {
+      const targetRoom = (roomCode || wsRoomCode || '').trim().toUpperCase();
+      if (!targetRoom) return;
+
+      if (
+        wsInstance &&
+        wsRoomCode === targetRoom &&
+        (wsInstance.readyState === WebSocket.OPEN || wsInstance.readyState === WebSocket.CONNECTING)
+      ) {
         return;
       }
+
+      if (wsInstance && wsRoomCode !== targetRoom) {
+        try {
+          wsInstance.onclose = null;
+          wsInstance.close();
+        } catch {
+          // ignore
+        }
+        wsInstance = null;
+      }
+
+      wsRoomCode = targetRoom;
       set({ wsConnecting: true });
 
       const customUrl = import.meta.env.VITE_WS_URL;
       const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const url = customUrl || `${proto}//${window.location.host}/ws`;
+      const base = customUrl || `${proto}//${window.location.host}/ws`;
+      const sep = base.includes('?') ? '&' : '?';
+      const url = `${base}${sep}roomCode=${encodeURIComponent(targetRoom)}`;
 
       const ws = new WebSocket(url);
       wsInstance = ws;
 
       ws.onopen = () => {
+        if (wsInstance !== ws) return;
         set({ wsConnected: true, wsConnecting: false });
+        const queued = pendingWsMessages;
+        pendingWsMessages = [];
+        for (const qMsg of queued) {
+          ws.send(JSON.stringify(qMsg));
+        }
         const room = get().onlineRoom;
-        if (room) {
-          sendWs({
-            type: 'match:reconnect',
-            roomCode: room.roomCode,
-            clientId: get().clientId,
-          });
+        if (room && room.roomCode === targetRoom && queued.length === 0) {
+          ws.send(
+            JSON.stringify({
+              type: 'match:reconnect',
+              roomCode: room.roomCode,
+              clientId: get().clientId,
+            }),
+          );
         }
       };
 
       ws.onclose = () => {
-        set({ wsConnected: false, wsConnecting: false });
+        if (wsInstance === ws) {
+          set({ wsConnected: false, wsConnecting: false });
+        }
       };
 
       ws.onerror = () => {
-        set({ wsConnected: false, wsConnecting: false });
+        if (wsInstance === ws) {
+          set({ wsConnected: false, wsConnecting: false });
+        }
       };
 
       ws.onmessage = (evt) => {
@@ -970,18 +1109,47 @@ export const useGameStore = create<GameStore>((set, get) => {
           }
           if (msg.type === 'queue:status') {
             set({
-              queueStatus: {
-                inQueue: msg.inQueue,
-                position: msg.position,
-                preferredPlayers: msg.preferredPlayers,
-                queuedCount: msg.queuedCount,
-              },
+              queueStatus: msg.inQueue
+                ? {
+                    inQueue: msg.inQueue,
+                    position: msg.position,
+                    preferredPlayers: msg.preferredPlayers,
+                    queuedCount: msg.queuedCount,
+                  }
+                : null,
             });
             return;
           }
           if (msg.type === 'queue:matched') {
             set({ queueStatus: null });
-            get().showToast(`Match found! Room ${msg.roomCode}`);
+            get().showToast(`Match found! Entering Room ${msg.roomCode}...`);
+            const { profile, settings, clientId } = get();
+            const eq = profile.equippedCustomizations[profile.selectedCharacterId] ?? {
+              outfitId: 'royal-guard',
+              skinId: 'classic',
+            };
+            if (msg.isHost) {
+              sendWs(
+                {
+                  type: 'room:create',
+                  roomCode: msg.roomCode,
+                  clientId,
+                  playerName: profile.displayName,
+                  userId: profile.uid,
+                  characterId: profile.selectedCharacterId,
+                  outfitId: eq.outfitId,
+                  skinId: eq.skinId,
+                  boardThemeId: settings.selectedBoardThemeId,
+                  maxPlayers: msg.preferredPlayers || 2,
+                  rules: { ...RULE_PRESETS.classic_kingdom },
+                },
+                msg.roomCode,
+              );
+            } else {
+              setTimeout(() => {
+                get().joinPrivateRoom(msg.roomCode);
+              }, 350);
+            }
             return;
           }
           if (msg.type === 'room:snapshot' || msg.type === 'match:event') {
@@ -1021,51 +1189,71 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
 
     disconnectWebSocket: () => {
+      pendingWsMessages = [];
+      wsRoomCode = null;
       if (wsInstance) {
-        wsInstance.close();
+        try {
+          wsInstance.onclose = null;
+          wsInstance.close();
+        } catch {
+          // ignore
+        }
         wsInstance = null;
       }
       set({ wsConnected: false, wsConnecting: false });
     },
 
     createPrivateRoom: (maxPlayers, rules) => {
-      get().connectWebSocket();
+      const roomCode = generateClientRoomCode();
+      set({ onlineRoom: null });
       const { profile, settings, clientId } = get();
       const eq = profile.equippedCustomizations[profile.selectedCharacterId] ?? {
         outfitId: 'royal-guard',
         skinId: 'classic',
       };
-      sendWs({
-        type: 'room:create',
-        clientId,
-        playerName: profile.displayName,
-        userId: profile.uid,
-        characterId: profile.selectedCharacterId,
-        outfitId: eq.outfitId,
-        skinId: eq.skinId,
-        boardThemeId: settings.selectedBoardThemeId,
-        maxPlayers,
-        rules,
-      });
+      sendWs(
+        {
+          type: 'room:create',
+          roomCode,
+          clientId,
+          playerName: profile.displayName,
+          userId: profile.uid,
+          characterId: profile.selectedCharacterId,
+          outfitId: eq.outfitId,
+          skinId: eq.skinId,
+          boardThemeId: settings.selectedBoardThemeId,
+          maxPlayers,
+          rules,
+        },
+        roomCode,
+      );
     },
 
     joinPrivateRoom: (roomCode) => {
-      get().connectWebSocket();
+      const cleanCode = roomCode.trim().toUpperCase();
+      if (!/^[A-Z0-9]{4,12}$/.test(cleanCode)) {
+        get().showToast('Please enter a valid 6-character room code.');
+        return;
+      }
+      set({ onlineRoom: null });
       const { profile, clientId } = get();
       const eq = profile.equippedCustomizations[profile.selectedCharacterId] ?? {
         outfitId: 'royal-guard',
         skinId: 'classic',
       };
-      sendWs({
-        type: 'room:join',
-        roomCode: roomCode.trim().toUpperCase(),
-        clientId,
-        playerName: profile.displayName,
-        userId: profile.uid,
-        characterId: profile.selectedCharacterId,
-        outfitId: eq.outfitId,
-        skinId: eq.skinId,
-      });
+      sendWs(
+        {
+          type: 'room:join',
+          roomCode: cleanCode,
+          clientId,
+          playerName: profile.displayName,
+          userId: profile.uid,
+          characterId: profile.selectedCharacterId,
+          outfitId: eq.outfitId,
+          skinId: eq.skinId,
+        },
+        cleanCode,
+      );
     },
 
     setRoomReady: (ready) => {
@@ -1091,40 +1279,51 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     leavePrivateRoom: () => {
       const room = get().onlineRoom;
-      if (!room) return;
-      sendWs({
-        type: 'room:leave',
-        roomCode: room.roomCode,
-        clientId: get().clientId,
-      });
+      if (room && wsInstance && wsInstance.readyState === WebSocket.OPEN) {
+        wsInstance.send(
+          JSON.stringify({
+            type: 'room:leave',
+            roomCode: room.roomCode,
+            clientId: get().clientId,
+          }),
+        );
+      }
       set({ onlineRoom: null });
+      get().disconnectWebSocket();
     },
 
     joinPublicQueue: (preferredPlayers) => {
-      get().connectWebSocket();
       const { profile, clientId } = get();
       const eq = profile.equippedCustomizations[profile.selectedCharacterId] ?? {
         outfitId: 'royal-guard',
         skinId: 'classic',
       };
-      sendWs({
-        type: 'queue:join',
-        clientId,
-        playerName: profile.displayName,
-        userId: profile.uid,
-        characterId: profile.selectedCharacterId,
-        outfitId: eq.outfitId,
-        skinId: eq.skinId,
-        preferredPlayers,
-      });
+      sendWs(
+        {
+          type: 'queue:join',
+          clientId,
+          playerName: profile.displayName,
+          userId: profile.uid,
+          characterId: profile.selectedCharacterId,
+          outfitId: eq.outfitId,
+          skinId: eq.skinId,
+          preferredPlayers,
+        },
+        'QUEUE',
+      );
     },
 
     leavePublicQueue: () => {
-      sendWs({
-        type: 'queue:leave',
-        clientId: get().clientId,
-      });
+      if (wsInstance && wsInstance.readyState === WebSocket.OPEN) {
+        wsInstance.send(
+          JSON.stringify({
+            type: 'queue:leave',
+            clientId: get().clientId,
+          }),
+        );
+      }
       set({ queueStatus: null });
+      get().disconnectWebSocket();
     },
 
     setPendingDeepLinkRoom: (pendingDeepLinkRoom) => set({ pendingDeepLinkRoom }),
