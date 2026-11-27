@@ -1,6 +1,7 @@
+<!-- DRAFT — requires legal review -->
 # Privacy Policy — KingdomLudo
 
-**Effective Date:** November 22, 2026
+**Effective Date:** November 27, 2026
 
 ## 1. Local & Guest Play
 
