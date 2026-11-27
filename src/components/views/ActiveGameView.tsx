@@ -15,6 +15,8 @@ import {
   MapPin,
   Maximize2,
   MessageSquare,
+  Mic,
+  MicOff,
   Minimize2,
   Pause,
   Play,
@@ -61,6 +63,28 @@ export const ActiveGameView: React.FC = () => {
   const [cameraLocked, setCameraLocked] = useState(false);
   const [showMoveLog, setShowMoveLog] = useState(false);
   const [showRoomChat, setShowRoomChat] = useState(false);
+  const [chatPreview, setChatPreview] = useState<{ senderName: string; text: string } | null>(null);
+  const chatMessages = useGameStore((s) => s.chatMessages);
+  const unreadChatCount = useGameStore((s) => s.unreadChatCount);
+  const clearUnreadChat = useGameStore((s) => s.clearUnreadChat);
+  const voiceEnabled = useGameStore((s) => s.voiceEnabled);
+  const voiceMuted = useGameStore((s) => s.voiceMuted);
+  const toggleVoice = useGameStore((s) => s.toggleVoice);
+  const toggleVoiceMute = useGameStore((s) => s.toggleVoiceMute);
+  const clientId = useGameStore((s) => s.clientId);
+
+  useEffect(() => {
+    if (showRoomChat) {
+      clearUnreadChat();
+      setChatPreview(null);
+      return;
+    }
+    const latest = chatMessages[chatMessages.length - 1];
+    if (!latest || latest.senderClientId === clientId) return;
+    setChatPreview({ senderName: latest.senderName, text: latest.text });
+    const timer = setTimeout(() => setChatPreview(null), 3500);
+    return () => clearTimeout(timer);
+  }, [chatMessages, showRoomChat, clientId, clearUnreadChat]);
   const [turnSecondsLeft, setTurnSecondsLeft] = useState<number | null>(null);
   const [exploreMode, setExploreMode] = useState(false);
   const [zenMode, setZenMode] = useState(false);
@@ -545,19 +569,56 @@ export const ActiveGameView: React.FC = () => {
           </button>
 
           {onlineRoom && (
-            <button
-              type="button"
-              onClick={() => setShowRoomChat(!showRoomChat)}
-              title="Room Chat & Voice"
-              aria-label="Toggle Room Chat and Voice"
-              className={`flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border transition ${
-                showRoomChat
-                  ? 'border-[#E6A93C] bg-[#E6A93C]/20 text-[#E6A93C]'
-                  : 'border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C]'
-              }`}
-            >
-              <MessageSquare className="h-4 w-4" />
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  if (voiceEnabled) {
+                    toggleVoiceMute();
+                  } else {
+                    void toggleVoice();
+                  }
+                }}
+                title={voiceEnabled ? (voiceMuted ? 'Unmute Mic' : 'Mute Mic') : 'Join P2P Voice Chat'}
+                aria-label="Toggle Voice Chat"
+                className={`flex min-h-[40px] items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition ${
+                  voiceEnabled
+                    ? voiceMuted
+                      ? 'border-[#D97706]/60 bg-[#D97706]/20 text-[#FBBF24]'
+                      : 'border-[#16A34A]/60 bg-[#16A34A]/20 text-[#4ADE80]'
+                    : 'border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C]'
+                }`}
+              >
+                {voiceEnabled && voiceMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                <span className="hidden sm:inline">
+                  {voiceEnabled ? (voiceMuted ? 'Muted' : 'Live') : 'Voice'}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !showRoomChat;
+                  setShowRoomChat(next);
+                  if (next) clearUnreadChat();
+                }}
+                title="Room Chat & Voice"
+                aria-label="Toggle Room Chat and Voice"
+                className={`relative flex min-h-[40px] items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition ${
+                  showRoomChat
+                    ? 'border-[#E6A93C] bg-[#E6A93C]/20 text-[#E6A93C]'
+                    : 'border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C]'
+                }`}
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span className="hidden sm:inline">Chat</span>
+                {unreadChatCount > 0 && !showRoomChat && (
+                  <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#E6A93C] px-1 text-[10px] font-extrabold text-[#10141E]">
+                    {unreadChatCount > 9 ? '9+' : unreadChatCount}
+                  </span>
+                )}
+              </button>
+            </>
           )}
 
           <button
@@ -680,6 +741,21 @@ export const ActiveGameView: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Floating Incoming Chat Preview Bubble */}
+      {onlineRoom && chatPreview && !showRoomChat && (
+        <button
+          type="button"
+          onClick={() => {
+            setShowRoomChat(true);
+            clearUnreadChat();
+          }}
+          className="absolute right-4 top-16 z-30 max-w-xs rounded-xl border border-[#E6A93C]/45 bg-[#10141E]/95 px-3.5 py-2 text-left text-xs text-[#E7E2D8] shadow-xl"
+        >
+          <span className="font-bold text-[#E6A93C]">{chatPreview.senderName}: </span>
+          <span className="line-clamp-2">{chatPreview.text}</span>
+        </button>
       )}
 
       {/* Online Room Chat & Voice Drawer */}

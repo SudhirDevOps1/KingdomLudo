@@ -185,6 +185,7 @@ interface GameStore {
   clientId: string;
   onlineRoom: RoomSnapshot | null;
   chatMessages: ChatMessageItem[];
+  unreadChatCount: number;
   voiceEnabled: boolean;
   voiceMuted: boolean;
   queueStatus: { inQueue: boolean; position: number; preferredPlayers: 2 | 4; queuedCount: number } | null;
@@ -239,6 +240,7 @@ interface GameStore {
   startPrivateRoom: () => void;
   leavePrivateRoom: () => void;
   sendChatMessage: (text: string) => void;
+  clearUnreadChat: () => void;
   toggleVoice: () => Promise<void>;
   toggleVoiceMute: () => void;
   joinPublicQueue: (preferredPlayers: 2 | 4) => void;
@@ -478,6 +480,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     clientId: createClientId(),
     onlineRoom: null,
     chatMessages: [],
+    unreadChatCount: 0,
     voiceEnabled: false,
     voiceMuted: false,
     queueStatus: null,
@@ -1178,8 +1181,10 @@ export const useGameStore = create<GameStore>((set, get) => {
             return;
           }
           if (msg.type === 'chat:message') {
+            const isFromOther = msg.message.senderClientId !== get().clientId;
             set((state) => ({
               chatMessages: [...state.chatMessages.slice(-49), msg.message],
+              unreadChatCount: isFromOther ? state.unreadChatCount + 1 : state.unreadChatCount,
             }));
             return;
           }
@@ -1371,9 +1376,11 @@ export const useGameStore = create<GameStore>((set, get) => {
           }),
         );
       }
-      set({ onlineRoom: null, chatMessages: [], voiceEnabled: false, voiceMuted: false });
+      set({ onlineRoom: null, chatMessages: [], unreadChatCount: 0, voiceEnabled: false, voiceMuted: false });
       get().disconnectWebSocket();
     },
+
+    clearUnreadChat: () => set({ unreadChatCount: 0 }),
 
     sendChatMessage: (text) => {
       const room = get().onlineRoom;
