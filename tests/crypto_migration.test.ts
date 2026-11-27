@@ -50,7 +50,7 @@ describe('AES-GCM Vault, Data Migration & DiceBear Avatar Engine', () => {
     };
     expect(parsed.displayName).toBe('Legacy Hero');
     expect(parsed.avatarStyle).toBe('adventurer');
-    expect(parsed.avatarSeed).toBe('Legacy Hero');
+    expect(parsed.avatarSeed.startsWith('cmd-')).toBe(true);
   });
 
   it('generates valid SVG data URIs with DiceBear Style API', () => {

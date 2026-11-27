@@ -1,4 +1,5 @@
 import { decryptVaultData, encryptVaultData } from './cryptoVault';
+import { createRandomAvatarSeed } from '../services/avatar/dicebearService';
 import type { StoredMatchHistoryItem, StoredProfile } from './localPersistence';
 
 export const CURRENT_SCHEMA_VERSION = 2;
@@ -40,7 +41,7 @@ export async function runDataMigrations(): Promise<{
       if (key === 'ck_profile' && parsed && typeof parsed === 'object') {
         const prof = parsed as Partial<StoredProfile>;
         if (!prof.avatarStyle) prof.avatarStyle = 'adventurer';
-        if (!prof.avatarSeed) prof.avatarSeed = prof.displayName || 'Royal Commander';
+        if (!prof.avatarSeed) prof.avatarSeed = createRandomAvatarSeed();
         parsed = prof;
       }
 

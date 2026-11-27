@@ -38,6 +38,11 @@ describe('ALTCHA Proof-of-Work Challenge & Verifier', () => {
 
     const result = await verifyAltchaPayload(token, TEST_SECRET);
     expect(result.valid).toBe(true);
+
+    // Replaying the same solved challenge must be rejected
+    const replay = await verifyAltchaPayload(token, TEST_SECRET);
+    expect(replay.valid).toBe(false);
+    expect(replay.reason).toMatch(/already used/i);
   });
 
   it('rejects tampered signature or wrong number', async () => {

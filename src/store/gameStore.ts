@@ -26,7 +26,7 @@ import {
   type StoredSettings,
 } from '../persistence/localPersistence';
 import { runDataMigrations } from '../persistence/migrations';
-import type { DiceBearStyleId } from '../services/avatar/dicebearService';
+import { createRandomAvatarSeed, type DiceBearStyleId } from '../services/avatar/dicebearService';
 import { triggerHapticImpact } from '../platform/capacitorBridge';
 import {
   getCurrentSupabaseUser,
@@ -107,7 +107,7 @@ const DEFAULT_PROFILE: StoredProfile = {
   displayName: 'Royal Commander',
   email: null,
   avatarStyle: 'adventurer',
-  avatarSeed: 'Royal Commander',
+  avatarSeed: createRandomAvatarSeed(),
   selectedCharacterId: 'ignis-drake',
   equippedCustomizations: {
     'ignis-drake': { outfitId: 'royal-guard', skinId: 'classic' },

@@ -217,9 +217,20 @@ if (!command || command === 'sync') {
     process.exit(1);
   }
   syncAllVersions(target);
+} else if (command === 'verify') {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'package.json'), 'utf-8'));
+  const expected = pkg.version as string;
+  const versionTsPath = path.join(ROOT_DIR, 'src/config/version.ts');
+  const versionTs = fs.existsSync(versionTsPath) ? fs.readFileSync(versionTsPath, 'utf-8') : '';
+  if (!versionTs.includes(`APP_VERSION = '${expected}'`)) {
+    console.error(`❌ Version drift detected! src/config/version.ts does not match package.json (${expected}). Run: pnpm run version:sync`);
+    process.exit(1);
+  }
+  console.log(`✅ Version verified: ${expected} matches src/config/version.ts`);
 } else {
   console.log(`Usage:`);
   console.log(`  pnpm run version:sync                # Sync current package.json version across all files`);
+  console.log(`  pnpm run version:verify              # Verify derived version surfaces match SSOT`);
   console.log(`  pnpm run version:bump [type]         # Bump version (patch|minor|major|alpha|beta|rc) & sync`);
   console.log(`  pnpm run version:set <new-version>   # Set exact version & sync across all files`);
 }

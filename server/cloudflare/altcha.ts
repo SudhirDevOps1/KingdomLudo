@@ -21,6 +21,8 @@ export interface AltchaPayload {
 
 // Ephemeral fallback key when ALTCHA_HMAC_KEY env var is not configured
 let runtimeFallbackKey: string | null = null;
+// Single-use replay registry (challenge -> expiry unix seconds)
+const consumedChallenges = new Map<string, number>();
 
 function getHmacSecret(envSecret?: string): string {
   if (envSecret && envSecret.length >= 16) return envSecret;
@@ -121,12 +123,25 @@ export async function verifyAltchaPayload(
   }
 
   // Check expiry embedded in salt
+  const nowSec = Math.floor(Date.now() / 1000);
+  let expiresAt = nowSec + 300;
   const expMatch = /[?&]expires=(\d+)/.exec(parsed.salt);
   if (expMatch) {
-    const expiresAt = Number(expMatch[1]);
-    if (Math.floor(Date.now() / 1000) > expiresAt) {
+    expiresAt = Number(expMatch[1]);
+    if (nowSec > expiresAt) {
       return { valid: false, reason: 'ALTCHA challenge expired. Please verify again.' };
     }
+  }
+
+  // Prune expired replay entries and reject replayed challenges
+  if (consumedChallenges.size > 2000) {
+    for (const [k, exp] of consumedChallenges.entries()) {
+      if (nowSec > exp) consumedChallenges.delete(k);
+    }
+  }
+  const existingExp = consumedChallenges.get(parsed.challenge);
+  if (existingExp && nowSec <= existingExp) {
+    return { valid: false, reason: 'ALTCHA challenge already used. Please verify again.' };
   }
 
   const secret = getHmacSecret(envSecret);
@@ -140,5 +155,6 @@ export async function verifyAltchaPayload(
     return { valid: false, reason: 'ALTCHA proof-of-work verification failed' };
   }
 
+  consumedChallenges.set(parsed.challenge, expiresAt);
   return { valid: true };
 }
