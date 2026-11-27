@@ -14,12 +14,16 @@ const ICE_SERVERS: RTCConfiguration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
 };
 
+const MAX_REMOTE_VOICE_PEERS = 3; // 4-player Ludo cap (local + 3 remote)
+const VOICE_MAX_DURATION_MS = 45 * 60 * 1000; // 45-minute auto-cap to protect battery/bandwidth
+
 class WebRtcVoiceManager {
   private localStream: MediaStream | null = null;
   private peers = new Map<string, RTCPeerConnection>();
   private audioElements = new Map<string, HTMLAudioElement>();
   private sendSignal: SignalSender | null = null;
   private muted = false;
+  private sessionTimer: ReturnType<typeof setTimeout> | null = null;
 
   public isActive(): boolean {
     return this.localStream !== null;
@@ -47,6 +51,10 @@ class WebRtcVoiceManager {
       });
       this.sendSignal = sendSignal;
       this.muted = false;
+      if (this.sessionTimer) clearTimeout(this.sessionTimer);
+      this.sessionTimer = setTimeout(() => {
+        this.leave();
+      }, VOICE_MAX_DURATION_MS);
       this.sendSignal('*', 'join');
       return { ok: true };
     } catch (err) {
@@ -75,6 +83,10 @@ class WebRtcVoiceManager {
   }
 
   public leave(): void {
+    if (this.sessionTimer) {
+      clearTimeout(this.sessionTimer);
+      this.sessionTimer = null;
+    }
     if (this.sendSignal && this.localStream) {
       this.sendSignal('*', 'leave');
     }
@@ -108,9 +120,10 @@ class WebRtcVoiceManager {
     this.muted = false;
   }
 
-  private createPeer(remoteClientId: string): RTCPeerConnection {
+  private createPeer(remoteClientId: string): RTCPeerConnection | null {
     const existing = this.peers.get(remoteClientId);
     if (existing) return existing;
+    if (this.peers.size >= MAX_REMOTE_VOICE_PEERS) return null;
 
     const pc = new RTCPeerConnection(ICE_SERVERS);
     this.peers.set(remoteClientId, pc);
@@ -187,6 +200,7 @@ class WebRtcVoiceManager {
 
     if (signalType === 'join') {
       const pc = this.createPeer(fromClientId);
+      if (!pc) return;
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       this.sendSignal?.(fromClientId, 'offer', offer);
@@ -195,6 +209,7 @@ class WebRtcVoiceManager {
 
     if (signalType === 'offer' && payload) {
       const pc = this.createPeer(fromClientId);
+      if (!pc) return;
       await pc.setRemoteDescription(new RTCSessionDescription(payload as RTCSessionDescriptionInit));
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
