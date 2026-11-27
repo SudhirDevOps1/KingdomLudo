@@ -353,6 +353,29 @@ export const SettingsView: React.FC = () => {
                 <p className="mt-1 text-xs leading-relaxed text-[#E7E2D8]/75">
                   Matches, player profiles, unlocks, and settings are saved locally on your device in offline IndexedDB and native SQLite. No telemetry is collected without consent.
                 </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => useGameStore.getState().openLegal('privacy')}
+                    className="rounded-lg border border-[#E6A93C]/40 bg-[#E6A93C]/10 px-3 py-1.5 text-xs font-semibold text-[#E6A93C] transition hover:bg-[#E6A93C]/20"
+                  >
+                    Read Privacy Policy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => useGameStore.getState().openLegal('terms')}
+                    className="rounded-lg border border-[#E7E2D8]/15 bg-[#10141E] px-3 py-1.5 text-xs font-semibold text-[#E7E2D8] transition hover:border-[#E6A93C]/40"
+                  >
+                    Terms of Service
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => useGameStore.getState().openLegal('cookies')}
+                    className="rounded-lg border border-[#E7E2D8]/15 bg-[#10141E] px-3 py-1.5 text-xs font-semibold text-[#E7E2D8] transition hover:border-[#E6A93C]/40"
+                  >
+                    Cookies & Storage
+                  </button>
+                </div>
               </div>
 
               {/* Data Backup & Restore */}

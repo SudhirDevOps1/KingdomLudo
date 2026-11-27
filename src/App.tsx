@@ -6,6 +6,7 @@
 import { useEffect } from 'react';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { ToastBanner } from './components/common/ToastBanner';
+import { Footer } from './components/layout/Footer';
 import { TopNav } from './components/layout/TopNav';
 import { OfflineIndicator } from './components/pwa/OfflineIndicator';
 import { ActiveGameView } from './components/views/ActiveGameView';
@@ -13,6 +14,7 @@ import { BoardsView } from './components/views/BoardsView';
 import { CharactersView } from './components/views/CharactersView';
 import { ChronicleView } from './components/views/ChronicleView';
 import { HomeHub } from './components/views/HomeHub';
+import { LegalView } from './components/views/LegalView';
 import { MatchSetupView } from './components/views/MatchSetupView';
 import { MultiplayerView } from './components/views/MultiplayerView';
 import { ProfileView } from './components/views/ProfileView';
@@ -63,20 +65,24 @@ function AppShell() {
   }, [bootstrap, flushActiveMatchSave, navigate, setPendingDeepLinkRoom, showToast]);
 
   return (
-    <div className="min-h-screen bg-[#10141E] text-[#E7E2D8]">
+    <div className="flex min-h-screen flex-col bg-[#10141E] text-[#E7E2D8]">
       <TopNav />
-      {screen === 'splash' && <SplashScreen />}
-      {screen === 'onboarding' && <OnboardingView />}
-      {screen === 'home' && <HomeHub />}
-      {screen === 'setup' && <MatchSetupView />}
-      {screen === 'characters' && <CharactersView />}
-      {screen === 'boards' && <BoardsView />}
-      {screen === 'multiplayer' && <MultiplayerView />}
-      {screen === 'play' && <ActiveGameView />}
-      {screen === 'chronicle' && <ChronicleView />}
-      {screen === 'profile' && <ProfileView />}
-      {screen === 'settings' && <SettingsView />}
-      {screen === 'help' && <HelpAndAboutView />}
+      <div className="flex-1">
+        {screen === 'splash' && <SplashScreen />}
+        {screen === 'onboarding' && <OnboardingView />}
+        {screen === 'home' && <HomeHub />}
+        {screen === 'setup' && <MatchSetupView />}
+        {screen === 'characters' && <CharactersView />}
+        {screen === 'boards' && <BoardsView />}
+        {screen === 'multiplayer' && <MultiplayerView />}
+        {screen === 'play' && <ActiveGameView />}
+        {screen === 'chronicle' && <ChronicleView />}
+        {screen === 'profile' && <ProfileView />}
+        {screen === 'settings' && <SettingsView />}
+        {screen === 'help' && <HelpAndAboutView />}
+        {screen === 'legal' && <LegalView />}
+      </div>
+      <Footer />
       <OfflineIndicator />
       <ToastBanner />
     </div>

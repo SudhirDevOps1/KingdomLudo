@@ -204,6 +204,25 @@ export const ProfileView: React.FC = () => {
                   <Sparkles className="h-4 w-4 text-[#E6A93C]" />
                   <span>Single-Click Google OAuth</span>
                 </button>
+
+                <p className="text-center text-[11px] leading-relaxed text-[#E7E2D8]/55">
+                  By signing in or creating an account, you agree to our{' '}
+                  <button
+                    type="button"
+                    onClick={() => useGameStore.getState().openLegal('terms')}
+                    className="text-[#E6A93C] underline hover:text-[#FDE047]"
+                  >
+                    Terms of Service
+                  </button>{' '}
+                  and{' '}
+                  <button
+                    type="button"
+                    onClick={() => useGameStore.getState().openLegal('privacy')}
+                    className="text-[#E6A93C] underline hover:text-[#FDE047]"
+                  >
+                    Privacy Policy
+                  </button>.
+                </p>
               </div>
             ) : (
               <div className="space-y-3">

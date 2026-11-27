@@ -57,10 +57,21 @@ export type AppScreen =
   | 'chronicle'
   | 'profile'
   | 'settings'
-  | 'help';
+  | 'help'
+  | 'legal';
 
 export type ChronicleTab = 'history' | 'stats' | 'achievements' | 'collection';
 export type SettingsTab = 'general' | 'audio' | 'graphics' | 'language' | 'privacy' | 'database';
+export type LegalTab = 'terms' | 'privacy' | 'cookies' | 'fair-play';
+
+function resolveLegalTabFromPath(pathname: string): LegalTab | null {
+  const clean = pathname.replace(/\/+$/, '').toLowerCase();
+  if (clean === '/terms' || clean === '/terms-of-service') return 'terms';
+  if (clean === '/privacy' || clean === '/privacy-policy') return 'privacy';
+  if (clean === '/cookies' || clean === '/cookie-policy') return 'cookies';
+  if (clean === '/fair-play' || clean === '/guidelines') return 'fair-play';
+  return null;
+}
 
 export interface SetupDraft {
   mode: 'pass_and_play' | 'vs_ai' | 'practice';
@@ -147,6 +158,7 @@ interface GameStore {
   screen: AppScreen;
   chronicleTab: ChronicleTab;
   settingsTab: SettingsTab;
+  legalTab: LegalTab;
   profile: StoredProfile;
   settings: StoredSettings;
   setupDraft: SetupDraft;
@@ -173,6 +185,7 @@ interface GameStore {
   navigate: (screen: AppScreen) => void;
   setChronicleTab: (tab: ChronicleTab) => void;
   setSettingsTab: (tab: SettingsTab) => void;
+  openLegal: (tab?: LegalTab) => void;
   showToast: (msg: string) => void;
   clearToast: () => void;
   completeOnboarding: () => Promise<void>;
@@ -385,6 +398,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     screen: 'splash',
     chronicleTab: 'history',
     settingsTab: 'general',
+    legalTab: 'terms',
     profile: DEFAULT_PROFILE,
     settings: DEFAULT_SETTINGS,
     setupDraft: DEFAULT_SETUP,
@@ -427,8 +441,12 @@ export const useGameStore = create<GameStore>((set, get) => {
         ambientVolume: settings.ambientVolume,
       });
 
+      const initialLegal =
+        typeof window !== 'undefined' ? resolveLegalTabFromPath(window.location.pathname) : null;
+
       set({
         initialized: true,
+        ...(initialLegal ? { screen: 'legal' as AppScreen, legalTab: initialLegal } : {}),
         guestSession: guest,
         supabaseReady: isSupabaseConfigured(),
         profile,
@@ -474,11 +492,32 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     navigate: (screen) => {
       soundEngine.playUiClick();
+      if (typeof window !== 'undefined' && screen !== 'legal') {
+        const currentLegal = resolveLegalTabFromPath(window.location.pathname);
+        if (currentLegal) {
+          try {
+            window.history.pushState({}, '', '/');
+          } catch {
+            // ignore
+          }
+        }
+      }
       set({ screen });
     },
 
     setChronicleTab: (chronicleTab) => set({ chronicleTab }),
     setSettingsTab: (settingsTab) => set({ settingsTab }),
+    openLegal: (tab = 'terms') => {
+      soundEngine.playUiClick();
+      if (typeof window !== 'undefined') {
+        try {
+          window.history.pushState({}, '', `/${tab}`);
+        } catch {
+          // ignore
+        }
+      }
+      set({ screen: 'legal', legalTab: tab });
+    },
 
     showToast: (toastMessage) => {
       set({ toastMessage });
