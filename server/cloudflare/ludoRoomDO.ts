@@ -677,15 +677,31 @@ export class LudoRoomDO {
 
       case 'voice:signal': {
         if (!room) return;
-        const sender = room.seats.find((s) => s.clientId === msg.fromClientId);
+        // Security: validate fromClientId against the authenticated socket session,
+        // not the message itself — prevents clientId spoofing / impersonation attacks.
+        const socketSession = this.clientSessions.get(ws);
+        if (!socketSession) return;
+        const authenticatedClientId = socketSession.clientId;
+
+        // Reject if the message's fromClientId doesn't match the socket's registered identity
+        if (msg.fromClientId !== authenticatedClientId) {
+          this.sendToSocket(ws, {
+            type: 'error',
+            code: 'FORBIDDEN',
+            message: 'Signal fromClientId does not match your session.',
+          });
+          return;
+        }
+
+        const sender = room.seats.find((s) => s.clientId === authenticatedClientId);
         if (!sender) return;
 
         // Relay WebRTC signaling directly to target peer (or all others for join/leave)
         for (const [sock, sess] of this.clientSessions.entries()) {
-          if (msg.toClientId === '*' ? sess.clientId !== msg.fromClientId : sess.clientId === msg.toClientId) {
+          if (msg.toClientId === '*' ? sess.clientId !== authenticatedClientId : sess.clientId === msg.toClientId) {
             this.sendToSocket(sock, {
               type: 'voice:signal',
-              fromClientId: msg.fromClientId,
+              fromClientId: authenticatedClientId,
               toClientId: sess.clientId,
               signalType: msg.signalType,
               payload: msg.payload,

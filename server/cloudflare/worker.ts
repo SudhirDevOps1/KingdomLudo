@@ -40,6 +40,25 @@ const SECURITY_HEADERS: Record<string, string> = {
   'X-Frame-Options': 'DENY',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  // Content-Security-Policy: tighten client-side execution surface
+  // - default-src 'self': only same-origin resources by default
+  // - script-src 'self': no inline scripts, no eval (Vite bundles are src-only)
+  // - connect-src: allow Supabase, Cloudflare Workers WS, and Google STUN
+  // - style-src 'unsafe-inline': Tailwind/CSS-in-JS needs inline styles
+  // - img-src: DiceBear SVG data URIs + same origin
+  // - worker-src 'self' blob:: Vite service worker needs blob:
+  'Content-Security-Policy': [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https://api.dicebear.com",
+    "font-src 'self' data:",
+    "connect-src 'self' wss: https://*.supabase.co https://*.supabase.in https://*.workers.dev stun:stun.l.google.com:19302",
+    "worker-src 'self' blob:",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; '),
 };
 
 function withSecurityHeaders(response: Response): Response {
