@@ -21,6 +21,7 @@ import {
   Pause,
   Play,
   RotateCcw,
+  SlidersHorizontal,
   Sparkles,
   Swords,
   Unlock,
@@ -89,6 +90,7 @@ export const ActiveGameView: React.FC = () => {
   const [exploreMode, setExploreMode] = useState(false);
   const [zenMode, setZenMode] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [showMobileTools, setShowMobileTools] = useState(false);
 
   const toggleExploreMode = () => {
     const next = !exploreMode;
@@ -288,10 +290,10 @@ export const ActiveGameView: React.FC = () => {
         const kMeta = APP_CONFIG.kingdoms[player.color];
 
         const cornerClasses: Record<string, string> = {
-          red: 'top-14 left-2 sm:top-16 sm:left-4',
-          blue: 'top-14 right-2 sm:top-16 sm:right-4',
-          green: 'bottom-4 left-2 sm:bottom-4 sm:left-4',
-          yellow: 'bottom-4 right-2 sm:bottom-4 sm:right-4',
+          red: 'top-[58px] left-2 sm:top-16 sm:left-4',
+          blue: 'top-[58px] right-2 sm:top-16 sm:right-4',
+          green: 'bottom-3 left-2 sm:bottom-4 sm:left-4',
+          yellow: 'bottom-3 right-2 sm:bottom-4 sm:right-4',
         };
 
         return (
@@ -299,7 +301,7 @@ export const ActiveGameView: React.FC = () => {
             key={player.seatIndex}
             className={`pointer-events-auto absolute ${
               cornerClasses[player.color]
-            } z-20 flex w-[148px] flex-col rounded-2xl border p-2.5 transition-all duration-300 sm:w-[178px] sm:p-3 ${
+            } z-20 flex w-[142px] flex-col rounded-2xl border p-2 transition-all duration-300 sm:w-[178px] sm:p-3 ${
               isCornerActive
                 ? 'border-[#E6A93C] bg-[#1A2130]/95 shadow-[0_0_24px_rgba(230,169,60,0.75)] ring-2 ring-[#E6A93C]'
                 : 'border-[#E7E2D8]/15 bg-[#10141E]/90 opacity-80 hover:opacity-100'
@@ -315,15 +317,20 @@ export const ActiveGameView: React.FC = () => {
               </div>
               {isLocalHuman ? (
                 <span className="shrink-0 rounded border border-emerald-500/40 bg-emerald-500/20 px-1.5 py-0.5 text-[8.5px] font-bold text-emerald-300">
-                  {match.mode === 'pass_and_play' ? `[P${player.seatIndex + 1}]` : '[HUMAN] [YOUR PLAYER]'}
+                  <span className="sm:hidden">{match.mode === 'pass_and_play' ? `P${player.seatIndex + 1}` : 'YOU'}</span>
+                  <span className="hidden sm:inline">
+                    {match.mode === 'pass_and_play' ? `[P${player.seatIndex + 1}]` : '[HUMAN] [YOUR PLAYER]'}
+                  </span>
                 </span>
               ) : isRemoteHuman ? (
                 <span className="shrink-0 rounded border border-purple-500/40 bg-purple-500/20 px-1.5 py-0.5 text-[8.5px] font-bold text-purple-300">
-                  [ONLINE RIVAL]
+                  <span className="sm:hidden">RIVAL</span>
+                  <span className="hidden sm:inline">[ONLINE RIVAL]</span>
                 </span>
               ) : (
                 <span className="shrink-0 rounded border border-blue-500/40 bg-blue-500/20 px-1.5 py-0.5 text-[8.5px] font-bold text-blue-300">
-                  [COMPUTER] [{(player.aiDifficulty || 'medium').toUpperCase()} AI]
+                  <span className="sm:hidden">AI</span>
+                  <span className="hidden sm:inline">[COMPUTER] [{(player.aiDifficulty || 'medium').toUpperCase()} AI]</span>
                 </span>
               )}
             </div>
@@ -418,25 +425,25 @@ export const ActiveGameView: React.FC = () => {
       })}
 
       {/* Minimal Top HUD Strip (Solid dark slate — no backdrop-blur over WebGL) */}
-      <div className="safe-top pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 p-2.5 sm:p-3.5">
-        <div className="pointer-events-auto flex items-center gap-2 rounded-xl border border-[#E7E2D8]/15 bg-[#10141E]/95 px-3 py-1.5 shadow-xl">
+      <div className="safe-top pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between gap-2 p-2 sm:items-start sm:p-3.5">
+        <div className="pointer-events-auto flex max-w-[54vw] items-center gap-2 rounded-xl border border-[#E7E2D8]/15 bg-[#10141E]/95 px-2.5 py-1.5 shadow-xl sm:max-w-none sm:px-3">
           <span
-            className="h-3.5 w-3.5 shrink-0 rounded-sm"
+            className="h-3 w-3 shrink-0 rounded-sm sm:h-3.5 sm:w-3.5"
             style={{ backgroundColor: APP_CONFIG.kingdoms[activeSeat.color].hex }}
           />
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 truncate text-xs font-bold text-[#E7E2D8]">
-              <span>{activeSeat.name}</span>
-              <span className="font-normal text-[#E6A93C]">({activeHero.name})</span>
+              <span className="truncate">{activeSeat.name}</span>
+              <span className="hidden font-normal text-[#E6A93C] sm:inline">({activeHero.name})</span>
               {activeSeat.type === 'human' ? (
-                <span className="rounded bg-emerald-500/20 px-1 text-[9px] text-emerald-400">YOU</span>
+                <span className="shrink-0 rounded bg-emerald-500/20 px-1 text-[9px] text-emerald-400">YOU</span>
               ) : activeSeat.type === 'remote' ? (
-                <span className="rounded bg-purple-500/20 px-1 text-[9px] text-purple-300">RIVAL</span>
+                <span className="shrink-0 rounded bg-purple-500/20 px-1 text-[9px] text-purple-300">RIVAL</span>
               ) : (
-                <span className="rounded bg-blue-500/20 px-1 text-[9px] text-blue-300">BOT</span>
+                <span className="shrink-0 rounded bg-blue-500/20 px-1 text-[9px] text-blue-300">BOT</span>
               )}
             </div>
-            <div className="truncate text-[11px] text-[#E7E2D8]/70">
+            <div className="hidden truncate text-[11px] text-[#E7E2D8]/70 sm:block">
               {match.phase === 'WAITING_ROLL'
                 ? activeSeat.type === 'human'
                   ? 'Tap corner dice or central 3D dice (Space)'
@@ -453,13 +460,13 @@ export const ActiveGameView: React.FC = () => {
             </div>
           </div>
           {turnSecondsLeft !== null && (
-            <span className="font-mono-num ml-1 rounded-md border border-[#E6A93C]/40 bg-[#1A2130] px-2 py-0.5 text-xs font-bold text-[#E6A93C]">
+            <span className="font-mono-num ml-1 shrink-0 rounded-md border border-[#E6A93C]/40 bg-[#1A2130] px-1.5 py-0.5 text-[11px] font-bold text-[#E6A93C] sm:px-2 sm:text-xs">
               {turnSecondsLeft}s
             </span>
           )}
         </div>
 
-        <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5">
+        <div className="pointer-events-auto flex flex-nowrap items-center justify-end gap-1.5 sm:flex-wrap">
           {!use2D && (
             <>
               <button
@@ -467,21 +474,21 @@ export const ActiveGameView: React.FC = () => {
                 onClick={toggleExploreMode}
                 title={exploreMode ? 'Return to Board Play' : 'Explore Living Island (360°)'}
                 aria-label="Explore Living Island"
-                className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition ${
+                className={`hidden min-h-[40px] items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition sm:inline-flex ${
                   exploreMode
                     ? 'border-[#E6A93C] bg-[#E6A93C]/20 text-[#E6A93C]'
                     : 'border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C]'
                 }`}
               >
                 <Compass className="h-4 w-4 text-[#E6A93C]" />
-                <span className="hidden sm:inline">{exploreMode ? 'Exit Explore' : 'Explore'}</span>
+                <span>{exploreMode ? 'Exit Explore' : 'Explore'}</span>
               </button>
               <button
                 type="button"
                 onClick={() => void updateSettings({ cinematicCamera: !settings.cinematicCamera })}
                 title="Toggle Cinematic Focus"
                 aria-label="Toggle Cinematic Focus"
-                className={`inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border px-2.5 text-xs font-semibold transition ${
+                className={`hidden min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border px-2.5 text-xs font-semibold transition sm:inline-flex ${
                   settings.cinematicCamera
                     ? 'border-[#E6A93C]/60 bg-[#10141E]/95 text-[#E6A93C]'
                     : 'border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8]/60'
@@ -493,10 +500,10 @@ export const ActiveGameView: React.FC = () => {
                 type="button"
                 onClick={cycleCamera}
                 title="Cycle Camera (C)"
-                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 px-2.5 text-xs font-semibold text-[#E7E2D8] hover:border-[#E6A93C]"
+                className="hidden min-h-[40px] items-center gap-1.5 rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 px-2.5 text-xs font-semibold text-[#E7E2D8] hover:border-[#E6A93C] sm:inline-flex"
               >
                 <Camera className="h-4 w-4 text-[#E6A93C]" />
-                <span className="hidden capitalize sm:inline">{cameraMode}</span>
+                <span className="capitalize">{cameraMode}</span>
               </button>
               <button
                 type="button"
@@ -524,7 +531,7 @@ export const ActiveGameView: React.FC = () => {
                 }}
                 title="Reset Camera (H)"
                 aria-label="Reset Camera"
-                className="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C]"
+                className="hidden min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C] sm:flex"
               >
                 <RotateCcw className="h-4 w-4" />
               </button>
@@ -533,7 +540,7 @@ export const ActiveGameView: React.FC = () => {
                 onClick={toggleLock}
                 title={cameraLocked ? 'Unlock Camera' : 'Lock Camera'}
                 aria-label={cameraLocked ? 'Unlock Camera' : 'Lock Camera'}
-                className="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C]"
+                className="hidden min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C] sm:flex"
               >
                 {cameraLocked ? <Lock className="h-4 w-4 text-[#E6A93C]" /> : <Unlock className="h-4 w-4" />}
               </button>
@@ -545,7 +552,7 @@ export const ActiveGameView: React.FC = () => {
               type="button"
               onClick={() => void updateSettings({ prefer2DFallback: !settings.prefer2DFallback })}
               title="Toggle 2D / 3D Board View"
-              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 px-2.5 text-xs font-semibold text-[#E7E2D8] hover:border-[#E6A93C]"
+              className="hidden min-h-[40px] items-center gap-1.5 rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 px-2.5 text-xs font-semibold text-[#E7E2D8] hover:border-[#E6A93C] sm:inline-flex"
             >
               <Eye className="h-4 w-4 text-[#E6A93C]" />
               <span>{use2D ? '3D' : '2D'}</span>
@@ -563,7 +570,7 @@ export const ActiveGameView: React.FC = () => {
             }}
             title="Toggle Fullscreen"
             aria-label="Toggle Fullscreen"
-            className="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C]"
+            className="hidden min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C] sm:flex"
           >
             <Maximize2 className="h-4 w-4" />
           </button>
@@ -625,7 +632,7 @@ export const ActiveGameView: React.FC = () => {
             type="button"
             onClick={() => setShowMoveLog(!showMoveLog)}
             aria-label="Toggle Move Log"
-            className="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C]"
+            className="hidden min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C] sm:flex"
           >
             <History className="h-4 w-4" />
           </button>
@@ -635,21 +642,158 @@ export const ActiveGameView: React.FC = () => {
             onClick={() => setShowHowToPlay(true)}
             title="How to Play & Rules Guide"
             aria-label="How to Play"
-            className="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C]"
+            className="hidden min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C] sm:flex"
           >
             <HelpCircle className="h-4 w-4 text-[#E6A93C]" />
           </button>
 
           <button
             type="button"
+            onClick={() => setShowMobileTools((prev) => !prev)}
+            title="Camera & Board Tools"
+            aria-label="Camera and Board Tools"
+            className={`flex min-h-[38px] min-w-[38px] items-center justify-center rounded-lg border transition sm:hidden ${
+              showMobileTools
+                ? 'border-[#E6A93C] bg-[#E6A93C]/20 text-[#E6A93C]'
+                : 'border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8]'
+            }`}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+          </button>
+
+          <button
+            type="button"
             onClick={() => togglePause(true)}
             aria-label="Pause Match"
-            className="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C]"
+            className="flex min-h-[38px] min-w-[38px] items-center justify-center rounded-lg border border-[#E7E2D8]/15 bg-[#10141E]/95 text-[#E7E2D8] hover:border-[#E6A93C] sm:min-h-[40px] sm:min-w-[40px]"
           >
             <Pause className="h-4 w-4" />
           </button>
         </div>
       </div>
+
+      {/* Mobile Collapsible Camera & Board Tools Popover */}
+      {showMobileTools && (
+        <div className="safe-top pointer-events-auto absolute top-[54px] right-2 z-30 w-64 rounded-2xl border border-[#E6A93C]/40 bg-[#10141E]/95 p-3 shadow-2xl sm:hidden">
+          <div className="mb-2 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#E6A93C]">
+            <span>Board &amp; Camera Tools</span>
+            <button
+              type="button"
+              onClick={() => setShowMobileTools(false)}
+              className="rounded px-1.5 py-0.5 text-[10px] text-[#E7E2D8]/70 hover:bg-white/10"
+            >
+              Close
+            </button>
+          </div>
+          <div className="grid grid-cols-3 gap-1.5 text-[11px] font-semibold text-[#E7E2D8]">
+            {!use2D && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleExploreMode();
+                    setShowMobileTools(false);
+                  }}
+                  className={`flex flex-col items-center gap-1 rounded-lg border p-2 ${
+                    exploreMode ? 'border-[#E6A93C] bg-[#E6A93C]/20 text-[#E6A93C]' : 'border-[#E7E2D8]/15 bg-[#1A2130]'
+                  }`}
+                >
+                  <Compass className="h-4 w-4 text-[#E6A93C]" />
+                  <span>{exploreMode ? 'Exit' : 'Explore'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={cycleCamera}
+                  className="flex flex-col items-center gap-1 rounded-lg border border-[#E7E2D8]/15 bg-[#1A2130] p-2"
+                >
+                  <Camera className="h-4 w-4 text-[#E6A93C]" />
+                  <span className="capitalize">{cameraMode}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCameraMode('isometric');
+                    viewportRef.current?.resetCamera();
+                    setShowMobileTools(false);
+                  }}
+                  className="flex flex-col items-center gap-1 rounded-lg border border-[#E7E2D8]/15 bg-[#1A2130] p-2"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  <span>Reset</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleLock}
+                  className="flex flex-col items-center gap-1 rounded-lg border border-[#E7E2D8]/15 bg-[#1A2130] p-2"
+                >
+                  {cameraLocked ? <Lock className="h-4 w-4 text-[#E6A93C]" /> : <Unlock className="h-4 w-4" />}
+                  <span>{cameraLocked ? 'Locked' : 'Lock'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void updateSettings({ cinematicCamera: !settings.cinematicCamera })}
+                  className={`flex flex-col items-center gap-1 rounded-lg border p-2 ${
+                    settings.cinematicCamera ? 'border-[#E6A93C]/60 bg-[#E6A93C]/10 text-[#E6A93C]' : 'border-[#E7E2D8]/15 bg-[#1A2130]'
+                  }`}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>Effects</span>
+                </button>
+              </>
+            )}
+            {webglAvailable && (
+              <button
+                type="button"
+                onClick={() => {
+                  void updateSettings({ prefer2DFallback: !settings.prefer2DFallback });
+                  setShowMobileTools(false);
+                }}
+                className="flex flex-col items-center gap-1 rounded-lg border border-[#E7E2D8]/15 bg-[#1A2130] p-2"
+              >
+                <Eye className="h-4 w-4 text-[#E6A93C]" />
+                <span>{use2D ? '3D View' : '2D View'}</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setShowMoveLog(!showMoveLog);
+                setShowMobileTools(false);
+              }}
+              className="flex flex-col items-center gap-1 rounded-lg border border-[#E7E2D8]/15 bg-[#1A2130] p-2"
+            >
+              <History className="h-4 w-4" />
+              <span>History</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowHowToPlay(true);
+                setShowMobileTools(false);
+              }}
+              className="flex flex-col items-center gap-1 rounded-lg border border-[#E7E2D8]/15 bg-[#1A2130] p-2"
+            >
+              <HelpCircle className="h-4 w-4 text-[#E6A93C]" />
+              <span>Rules</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (document.fullscreenElement) {
+                  void document.exitFullscreen();
+                } else {
+                  void document.documentElement.requestFullscreen();
+                }
+                setShowMobileTools(false);
+              }}
+              className="flex flex-col items-center gap-1 rounded-lg border border-[#E7E2D8]/15 bg-[#1A2130] p-2"
+            >
+              <Maximize2 className="h-4 w-4" />
+              <span>Full</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Living Island 360° Explorer Landmark Toolbar */}
       {exploreMode && (
