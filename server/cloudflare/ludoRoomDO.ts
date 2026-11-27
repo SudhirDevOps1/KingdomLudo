@@ -214,7 +214,14 @@ export class LudoRoomDO {
           }
           emptySeat.clientId = msg.clientId;
           emptySeat.userId = msg.userId;
-          emptySeat.name = msg.playerName;
+          let chosenName = (msg.playerName || '').trim().slice(0, 24) || `Challenger #${room.seats.filter((s) => s.clientId !== null).length + 1}`;
+          const existingNames = room.seats
+            .filter((s) => s.clientId !== null && s !== emptySeat)
+            .map((s) => s.name.trim().toLowerCase());
+          if (existingNames.includes(chosenName.toLowerCase())) {
+            chosenName = `${chosenName} (${room.seats.filter((s) => s.clientId !== null).length + 1})`;
+          }
+          emptySeat.name = chosenName;
           emptySeat.characterId = msg.characterId;
           emptySeat.outfitId = msg.outfitId;
           emptySeat.skinId = msg.skinId;

@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Check, Copy, Globe, KeyRound, Play, Users, Wifi, WifiOff } from 'lucide-react';
 import { APP_CONFIG } from '../../config/appConfig';
-import { getCharacterById } from '../../data/characters';
+import { CHARACTERS, getCharacterById } from '../../data/characters';
 import { RULE_PRESETS } from '../../engine/ludoEngine';
 import { useGameStore } from '../../store/gameStore';
 
 export const MultiplayerView: React.FC = () => {
+  const profile = useGameStore((s) => s.profile);
+  const updateDisplayName = useGameStore((s) => s.updateDisplayName);
+  const equipCharacter = useGameStore((s) => s.equipCharacter);
   const wsConnected = useGameStore((s) => s.wsConnected);
   const wsConnecting = useGameStore((s) => s.wsConnecting);
   const clientId = useGameStore((s) => s.clientId);
@@ -27,6 +30,19 @@ export const MultiplayerView: React.FC = () => {
   const [maxPlayers, setMaxPlayers] = useState<2 | 3 | 4>(4);
   const [joinCode, setJoinCode] = useState(pendingDeepLinkRoom ?? '');
   const [copiedCode, setCopiedCode] = useState(false);
+  const [nameInput, setNameInput] = useState(profile.displayName || 'Royal Commander');
+
+  useEffect(() => {
+    setNameInput(profile.displayName);
+  }, [profile.displayName]);
+
+  const handleSaveName = () => {
+    const trimmed = nameInput.trim();
+    if (trimmed && trimmed !== profile.displayName) {
+      void updateDisplayName(trimmed);
+      showToast(`Commander name updated to "${trimmed}"`);
+    }
+  };
 
   useEffect(() => {
     connectWebSocket();
@@ -92,6 +108,63 @@ export const MultiplayerView: React.FC = () => {
         </div>
       </div>
 
+      {/* Commander Customization Bar (Set Name & Hero before entering matches) */}
+      <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#E6A93C]/35 bg-[#1A2130] p-4 shadow-xl">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#E6A93C]/50 bg-[#10141E] text-sm font-bold text-[#E6A93C]">
+            {profile.displayName.slice(0, 2).toUpperCase()}
+          </div>
+          <div>
+            <label htmlFor="commander-name-input" className="block text-[10px] font-bold uppercase tracking-wider text-[#E6A93C]">
+              Your Online Player Name
+            </label>
+            <div className="mt-1 flex items-center gap-2">
+              <input
+                id="commander-name-input"
+                type="text"
+                maxLength={24}
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onBlur={handleSaveName}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveName();
+                }}
+                className="min-h-[38px] rounded-lg border border-[#E7E2D8]/20 bg-[#10141E] px-3 text-sm font-bold text-[#E7E2D8] placeholder-[#E7E2D8]/40 focus:border-[#E6A93C] focus:outline-none"
+                placeholder="Enter Your Name"
+              />
+              <button
+                type="button"
+                onClick={handleSaveName}
+                className="min-h-[38px] rounded-lg bg-[#E6A93C] px-3.5 py-1 text-xs font-bold text-[#10141E] transition hover:bg-[#D97706]"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          <label htmlFor="commander-hero-select" className="text-xs font-semibold text-[#E7E2D8]/80">
+            Selected Hero:
+          </label>
+          <select
+            id="commander-hero-select"
+            value={profile.selectedCharacterId}
+            onChange={(e) => {
+              void equipCharacter(e.target.value, 'royal-guard', 'classic');
+              showToast(`Hero updated to ${getCharacterById(e.target.value).name}`);
+            }}
+            className="min-h-[38px] rounded-lg border border-[#E7E2D8]/20 bg-[#10141E] px-3 text-xs font-bold text-[#E6A93C] focus:border-[#E6A93C] focus:outline-none"
+          >
+            {CHARACTERS.map((char) => (
+              <option key={char.id} value={char.id}>
+                {char.name} ({char.title})
+              </option>
+            ))}
+          </select>
+        </div>
+      </section>
+
       {/* Active Lobby View if currently in a room */}
       {onlineRoom ? (
         <section className="space-y-6 rounded-2xl border border-[#E6A93C]/45 bg-[#1A2130] p-6 shadow-2xl">
@@ -156,23 +229,35 @@ export const MultiplayerView: React.FC = () => {
             {onlineRoom.seats.map((seat) => {
               const char = getCharacterById(seat.characterId);
               const kMeta = APP_CONFIG.kingdoms[seat.color];
+              const isMe = seat.clientId === clientId;
               return (
                 <div
                   key={seat.clientId}
-                  className="rounded-xl border border-[#E7E2D8]/15 bg-[#10141E] p-4"
+                  className={`rounded-xl border p-4 ${
+                    isMe
+                      ? 'border-[#E6A93C] bg-[#1A2130] shadow-[0_0_15px_rgba(230,169,60,0.2)] ring-1 ring-[#E6A93C]'
+                      : 'border-[#E7E2D8]/15 bg-[#10141E]'
+                  }`}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className="h-3.5 w-3.5 rounded-sm"
                       style={{ backgroundColor: kMeta.hex }}
                     />
-                    <span
-                      className={`text-[11px] font-bold uppercase ${
-                        seat.ready ? 'text-[#4ADE80]' : 'text-[#E7E2D8]/50'
-                      }`}
-                    >
-                      {seat.ready ? 'Ready' : 'Waiting'}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {isMe && (
+                        <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-400">
+                          YOU
+                        </span>
+                      )}
+                      <span
+                        className={`text-[11px] font-bold uppercase ${
+                          seat.ready ? 'text-[#4ADE80]' : 'text-[#E7E2D8]/50'
+                        }`}
+                      >
+                        {seat.ready ? 'Ready' : 'Waiting'}
+                      </span>
+                    </div>
                   </div>
                   <h3 className="mt-3 truncate font-display text-base font-bold text-[#E7E2D8]">
                     {seat.name}
@@ -181,7 +266,7 @@ export const MultiplayerView: React.FC = () => {
                     {char.name} ({kMeta.name})
                   </p>
                   <p className="mt-2 text-[11px] text-[#E7E2D8]/60">
-                    {seat.clientId === onlineRoom.hostClientId ? 'Room Host' : 'Challenger'}
+                    {seat.clientId === onlineRoom.hostClientId ? 'Room Host 👑' : 'Challenger ⚔️'}
                   </p>
                 </div>
               );

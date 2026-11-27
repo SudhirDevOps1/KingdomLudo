@@ -252,7 +252,8 @@ export const ActiveGameView: React.FC = () => {
       {/* 4 Responsive Corner Player Cards with Embedded Dice Rollers (hidden in Zen Explore Mode) */}
       {!(exploreMode && zenMode) && match.players.map((player) => {
         const isCornerActive = player.seatIndex === match.activeSeatIndex;
-        const isHuman = player.type === 'human';
+        const isLocalHuman = player.type === 'human';
+        const isRemoteHuman = player.type === 'remote';
         const hero = getCharacterById(player.characterId);
         const homePieces = player.pieces.filter((pc) => pc.progress === 56).length;
         const kMeta = APP_CONFIG.kingdoms[player.color];
@@ -283,9 +284,13 @@ export const ActiveGameView: React.FC = () => {
                 />
                 <span className="truncate text-xs font-bold text-[#E7E2D8]">{player.name}</span>
               </div>
-              {isHuman ? (
+              {isLocalHuman ? (
                 <span className="shrink-0 rounded border border-emerald-500/40 bg-emerald-500/20 px-1.5 py-0.5 text-[8.5px] font-bold text-emerald-300">
-                  [HUMAN] {match.mode === 'pass_and_play' ? `[P${player.seatIndex + 1}]` : '[YOUR PLAYER]'}
+                  {match.mode === 'pass_and_play' ? `[P${player.seatIndex + 1}]` : '[HUMAN] [YOUR PLAYER]'}
+                </span>
+              ) : isRemoteHuman ? (
+                <span className="shrink-0 rounded border border-purple-500/40 bg-purple-500/20 px-1.5 py-0.5 text-[8.5px] font-bold text-purple-300">
+                  [ONLINE RIVAL]
                 </span>
               ) : (
                 <span className="shrink-0 rounded border border-blue-500/40 bg-blue-500/20 px-1.5 py-0.5 text-[8.5px] font-bold text-blue-300">
@@ -299,8 +304,20 @@ export const ActiveGameView: React.FC = () => {
             </div>
 
             {isCornerActive && (
-              <div className="mt-1 flex items-center justify-center rounded bg-[#E6A93C]/20 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#E6A93C] animate-pulse">
-                {isHuman ? '👑 YOUR TURN' : '🤖 BOT THINKING'}
+              <div
+                className={`mt-1 flex items-center justify-center rounded py-0.5 text-[10px] font-bold uppercase tracking-wider animate-pulse ${
+                  isLocalHuman
+                    ? 'bg-[#E6A93C]/20 text-[#E6A93C]'
+                    : isRemoteHuman
+                    ? 'bg-purple-500/20 text-purple-300'
+                    : 'bg-blue-500/20 text-blue-300'
+                }`}
+              >
+                {isLocalHuman
+                  ? '👑 YOUR TURN'
+                  : isRemoteHuman
+                  ? '⚔️ RIVAL TURN'
+                  : '🤖 BOT THINKING'}
               </div>
             )}
 
@@ -322,7 +339,7 @@ export const ActiveGameView: React.FC = () => {
               {/* Interactive Corner Dice Roller */}
               {isCornerActive ? (
                 match.phase === 'WAITING_ROLL' ? (
-                  isHuman ? (
+                  isLocalHuman ? (
                     <button
                       type="button"
                       onClick={() => void rollDice()}
@@ -332,10 +349,15 @@ export const ActiveGameView: React.FC = () => {
                       <Dice6 className="h-3.5 w-3.5" />
                       <span>ROLL</span>
                     </button>
+                  ) : isRemoteHuman ? (
+                    <div className="flex items-center gap-1 rounded-lg border border-purple-400/40 bg-purple-950/60 px-2 py-0.5 text-[10px] font-semibold text-purple-200">
+                      <Dice6 className="h-3 w-3 animate-spin text-purple-300" />
+                      <span>Rolling...</span>
+                    </div>
                   ) : (
                     <div className="flex items-center gap-1 rounded-lg border border-blue-400/40 bg-blue-950/60 px-2 py-0.5 text-[10px] font-semibold text-blue-200">
-                      <Dice6 className="h-3 w-3 animate-spin" />
-                      <span>Rolling...</span>
+                      <Dice6 className="h-3 w-3 animate-spin text-blue-300" />
+                      <span>Thinking...</span>
                     </div>
                   )
                 ) : (
@@ -368,6 +390,8 @@ export const ActiveGameView: React.FC = () => {
               <span className="font-normal text-[#E6A93C]">({activeHero.name})</span>
               {activeSeat.type === 'human' ? (
                 <span className="rounded bg-emerald-500/20 px-1 text-[9px] text-emerald-400">YOU</span>
+              ) : activeSeat.type === 'remote' ? (
+                <span className="rounded bg-purple-500/20 px-1 text-[9px] text-purple-300">RIVAL</span>
               ) : (
                 <span className="rounded bg-blue-500/20 px-1 text-[9px] text-blue-300">BOT</span>
               )}
@@ -376,9 +400,15 @@ export const ActiveGameView: React.FC = () => {
               {match.phase === 'WAITING_ROLL'
                 ? activeSeat.type === 'human'
                   ? 'Tap corner dice or central 3D dice (Space)'
+                  : activeSeat.type === 'remote'
+                  ? `Waiting for ${activeSeat.name} to roll...`
                   : 'AI Bot is thinking...'
                 : match.phase === 'WAITING_MOVE'
-                  ? t.selectPiece
+                  ? activeSeat.type === 'human'
+                    ? t.selectPiece
+                    : activeSeat.type === 'remote'
+                    ? `${activeSeat.name} is choosing a piece to move...`
+                    : 'AI Bot is choosing move...'
                   : 'Match Complete'}
             </div>
           </div>

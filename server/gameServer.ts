@@ -292,12 +292,18 @@ export class AuthoritativeGameServer {
 
     const colors = getSeatsForPlayerCount(room.maxPlayers);
     const seatIndex = room.seats.length;
+    let chosenName = sanitizeName(msg.playerName) || `Challenger #${room.seats.length + 1}`;
+    const existingNames = room.seats.map((s) => s.name.trim().toLowerCase());
+    if (existingNames.includes(chosenName.toLowerCase())) {
+      chosenName = `${chosenName} (${room.seats.length + 1})`;
+    }
+
     room.seats.push({
       seatIndex,
       color: colors[seatIndex],
       clientId: msg.clientId,
       userId: msg.userId,
-      name: sanitizeName(msg.playerName),
+      name: chosenName,
       characterId: msg.characterId,
       outfitId: msg.outfitId,
       skinId: msg.skinId,
