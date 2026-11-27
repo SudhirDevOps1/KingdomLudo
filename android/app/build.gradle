@@ -51,6 +51,8 @@ android {
                     storePassword keystorePass
                     keyAlias keyAliasName
                     keyPassword keyPass
+                    enableV1Signing true
+                    enableV2Signing true
                 } else {
                     logger.warn("WARNING: ANDROID_KEYSTORE_PATH specified but file does not exist: ${keystorePath}")
                 }
